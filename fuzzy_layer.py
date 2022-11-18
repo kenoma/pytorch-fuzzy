@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from torch import Tensor
 
 class FuzzyLayer(torch.nn.Module):
 
@@ -19,15 +20,15 @@ class FuzzyLayer(torch.nn.Module):
         diags = []
         for s,c in zip(initial_scales, initial_centers):
             diags.append(np.insert(np.diag(s), self.size_in, c, axis = 1))
-        a = torch.FloatTensor(diags)
+        a = torch.FloatTensor(np.array(diags))
 
         const_row = np.zeros(self.size_in+1)
         const_row[self.size_in] = 1
         const_row = np.array([const_row]*self.size_out)
         const_row = np.reshape(const_row, (self.size_out, 1, self.size_in+1))
-        self.c_r = torch.FloatTensor(const_row)
-        self.c_one = torch.FloatTensor([1])
-        self.A = nn.Parameter(a) 
+        self.c_r = nn.Parameter(torch.FloatTensor(const_row), requires_grad=False)
+        self.c_one = nn.Parameter(torch.FloatTensor([1]), requires_grad=False)
+        self.A = nn.Parameter(a, requires_grad=True) 
 
     @classmethod
     def fromdimentions(cls, size_in, size_out):
@@ -42,10 +43,14 @@ class FuzzyLayer(torch.nn.Module):
         initial_scales = torch.ones(sizes)
         return cls(initial_centers, initial_scales)
 
-    def forward(self, x):
+    def forward(self, input: Tensor) -> Tensor:
+        batch_size = input.shape[0]
         ta = torch.cat([self.A, self.c_r],1)
-        tx = torch.transpose(torch.reshape(torch.cat([x,self.c_one]), (1,self.size_in+1)),0,1)
+        repeated_one = self.c_one.repeat(batch_size,1)
+        ext_x = torch.cat([input, repeated_one], 1)
+        #reshaped_x = torch.reshape(ext_x, (1, self.size_in+1))
+        tx = torch.transpose(ext_x, 0, 1)
         mul = torch.matmul(ta, tx)
         exponents = torch.norm(mul[:,:self.size_in], p=2, dim=1)
         memberships = torch.exp(-exponents)
-        return memberships.flatten()
+        return memberships.transpose(0,1)
