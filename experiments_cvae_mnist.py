@@ -18,7 +18,17 @@ class VariationalEncoder(nn.Module):
         self.linear1 = nn.Linear(784, 512)
         self.linear2 = nn.Linear(512, latent_dims)
         self.linear3 = nn.Linear(512, latent_dims)
-        self.fuzzy = FuzzyLayer.fromdimentions(latent_dims, 10)
+        self.fuzzy = FuzzyLayer.fromcenters(initial_centers=[
+            [ 0.8090169943,  0.5877852524], 
+            [ 0.3090169938,  0.9510565165], 
+            [-0.3090169938,  0.9510565165], 
+            [-0.8090169943,  0.5877852524], 
+            [-1.,            0.          ], 
+            [-0.8090169943, -0.5877852524], 
+            [-0.3090169938, -0.9510565165], 
+            [ 0.3090169938, -0.9510565165], 
+            [ 0.8090169943, -0.5877852524], 
+            [ 1.,            0.          ]])
 
         self.N = torch.distributions.Normal(0, 1)
         self.N.loc = self.N.loc.cuda() 
@@ -59,12 +69,15 @@ class VariationalAutoencoder(nn.Module):
 #%%
 def train(autoencoder, data, epochs=20):
     opt = torch.optim.Adam(autoencoder.parameters())
+    ploss = nn.PoissonNLLLoss()
     for epoch in range(epochs):
         for x, y in data:
             x = x.to(device) # GPU
             opt.zero_grad()
             x_hat,fz_x = autoencoder(x)
-            loss = ((x - x_hat)**2).sum() + autoencoder.encoder.kl
+            gy = F.one_hot(y, num_classes=10).to(device)
+            poison_loss_value = ploss(fz_x, gy)
+            loss = ((x - x_hat)**2).sum() + autoencoder.encoder.kl + poison_loss_value
             loss.backward()
             opt.step()
         print(f"Epoch {epoch}")
@@ -78,7 +91,7 @@ data = torch.utils.data.DataLoader(
         batch_size=128,
         shuffle=True)
 vae = VariationalAutoencoder(latent_dims).to(device) # GPU
-vae = train(vae, data, 2)
+vae = train(vae, data, 20)
 #%%
 def plot_latent(autoencoder, data, num_batches=100):
     for i, (x, y) in enumerate(data):
