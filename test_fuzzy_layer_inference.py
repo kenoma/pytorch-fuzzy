@@ -1,6 +1,6 @@
+import pytest
 from fuzzy_layer import FuzzyLayer
 import torch
-import pytest
 
 def test_case_1():
     model = FuzzyLayer.fromcenters([[1,1], [10,10], [1,10], [10,1]])

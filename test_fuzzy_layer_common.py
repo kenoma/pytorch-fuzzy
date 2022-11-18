@@ -1,3 +1,4 @@
+import pytest
 from fuzzy_layer import FuzzyLayer
 import torch
 
