@@ -68,19 +68,32 @@ class VariationalAutoencoder(nn.Module):
         return self.decoder(z), fz
 #%%
 def train(autoencoder, data, epochs=20):
-    opt = torch.optim.Adam(autoencoder.parameters())
-    ploss = nn.PoissonNLLLoss()
+    opt = torch.optim.Adagrad(autoencoder.parameters())
+    ploss = nn.PoissonNLLLoss(reduction="sum")
+
     for epoch in range(epochs):
+        sum_ploss = 0
+        sum_loss = 0
+        count= 0
         for x, y in data:
-            x = x.to(device) # GPU
+            x = x.to(device) 
             opt.zero_grad()
             x_hat,fz_x = autoencoder(x)
             gy = F.one_hot(y, num_classes=10).to(device)
             poison_loss_value = ploss(fz_x, gy)
-            loss = ((x - x_hat)**2).sum() + autoencoder.encoder.kl + poison_loss_value
-            loss.backward()
+            loss = ((x - x_hat)**2).sum() + autoencoder.encoder.kl 
+            #loss.backward(retain_graph=True)
+            poison_loss_value.backward()
             opt.step()
-        print(f"Epoch {epoch}")
+            count+=1
+            sum_ploss += poison_loss_value
+            sum_loss += loss
+                    
+        print(f"Epoch {epoch}: loss {sum_loss/count} ploss {sum_ploss/count}")
+        count = 0
+        sum_loss = 0
+        sum_ploss = 0
+
     return autoencoder
 #%%
 latent_dims = 2

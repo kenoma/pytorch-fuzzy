@@ -5,7 +5,7 @@ from torch import Tensor
 
 class FuzzyLayer(torch.nn.Module):
 
-    def __init__(self, initial_centers, initial_scales):
+    def __init__(self, initial_centers, initial_scales, trainable=True):
         """
         mu_j(x,a,c) = exp(-|| a . x ||^2)
         """
@@ -15,7 +15,7 @@ class FuzzyLayer(torch.nn.Module):
             raise Exception("initial_centers shape does not match initial_scales")
 
         sizes = np.shape(initial_centers)
-        self.size_out, self.size_in = sizes[0], sizes[1]
+        self.size_out, self.size_in, *_ = sizes
 
         diags = []
         for s,c in zip(initial_scales, initial_centers):
@@ -28,20 +28,20 @@ class FuzzyLayer(torch.nn.Module):
         const_row = np.reshape(const_row, (self.size_out, 1, self.size_in+1))
         self.c_r = nn.Parameter(torch.FloatTensor(const_row), requires_grad=False)
         self.c_one = nn.Parameter(torch.FloatTensor([1]), requires_grad=False)
-        self.A = nn.Parameter(a, requires_grad=True) 
+        self.A = nn.Parameter(a, requires_grad=trainable) 
 
     @classmethod
-    def fromdimentions(cls, size_in, size_out):
+    def fromdimentions(cls, size_in, size_out, trainable=True):
         initial_centers = torch.randn((size_out, size_in))
         initial_scales = torch.ones((size_out, size_in))
-        return cls(initial_centers, initial_scales)
+        return cls(initial_centers, initial_scales, trainable)
 
     @classmethod
-    def fromcenters(cls, initial_centers):
+    def fromcenters(cls, initial_centers, trainable=True):
         initial_centers =  np.multiply(-1, initial_centers)
         sizes = np.shape(initial_centers)
         initial_scales = torch.ones(sizes)
-        return cls(initial_centers, initial_scales)
+        return cls(initial_centers, initial_scales, trainable)
 
     def forward(self, input: Tensor) -> Tensor:
         batch_size = input.shape[0]
