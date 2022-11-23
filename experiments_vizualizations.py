@@ -8,6 +8,8 @@ import torchvision
 import numpy as np
 import matplotlib.pyplot as plt
 from fuzzy_layer import FuzzyLayer
+from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 #%%
@@ -24,19 +26,28 @@ class SimpleClustering(nn.Module):
 
     def forward(self, x):
         return self.fuzzy(x)
+
+class NoisyClustersDataset(Dataset):
+    def __init__(self, clusters, size=1000):
+        self.clusters = clusters
+        self.size = size
+
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, idx):
+        cluster = np.random.randint(len(self.clusters))
+        rcl = self.clusters[cluster]
+        return rcl[0] * np.random.randn(2) + rcl[1:], cluster
+
 #%%
-sample_size = 300
-dataset = 1 * np.random.randn(sample_size,2) + 1
-labels  = np.repeat([1,0],sample_size) 
-
-dataset = np.append(dataset, 0.1 * np.random.randn(sample_size,2) - 1, axis=0)
-labels = np.append(labels, np.repeat([0,1],sample_size) , axis=0)
-
-dataset = torch.FloatTensor(dataset)
-labels = torch.FloatTensor(labels).to(device)
+ds = NoisyClustersDataset([[1,-1,-1], [0.5,1,1]])
+dl = DataLoader(ds, batch_size=20)
 #%%
 model = SimpleClustering()
-processed_dataset = model(dataset).detach().numpy()
+features, labels = next(iter(dl))
+processed_dataset = model(features).detach().numpy()
+#%%
 assigned_classes =[np.argmax(a) for a in model(dataset).detach().numpy()]
 plot_clusters(dataset,assigned_classes)
 #%%
