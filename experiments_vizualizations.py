@@ -20,9 +20,7 @@ def plot_clusters(z, labels):
 class SimpleClustering(nn.Module):
     def __init__(self):
         super(SimpleClustering, self).__init__()
-        self.fuzzy = FuzzyLayer.fromcenters(initial_centers=[
-            [ -1.,  1], 
-            [  1., -1]], trainable=True)
+        self.fuzzy = FuzzyLayer.fromdimentions(2, 5, trainable=True)
 
     def forward(self, x):
         return self.fuzzy(x)
@@ -41,42 +39,46 @@ class NoisyClustersDataset(Dataset):
         return rcl[0] * np.random.randn(2) + rcl[1:], cluster
 
 #%%
-ds = NoisyClustersDataset([[1,-1,-1], [0.5,1,1]])
-dl = DataLoader(ds, batch_size=20)
+ds = NoisyClustersDataset([[1,-1,-1], 
+                           [0.5,1,1], 
+                           [0.1,-1,1], 
+                           [0.3,1,-1],
+                           [0.1, 0, 0]], 10000)
+dl = DataLoader(ds, batch_size=256)
 #%%
 model = SimpleClustering()
 features, labels = next(iter(dl))
-processed_dataset = model(features).detach().numpy()
+processed_dataset = model(features.float()).detach().numpy()
+plot_clusters(features, labels)
 #%%
-assigned_classes =[np.argmax(a) for a in model(dataset).detach().numpy()]
-plot_clusters(dataset,assigned_classes)
+res = model(features.float()).detach().numpy()
+assigned_classes =[np.argmax(a) for a in res]
+plot_clusters(features, assigned_classes)
 #%%
-def train(model, data, labels, epochs=20):
-    opt = torch.optim.Adadelta(model.parameters())
-    ploss = nn.CrossEntropyLoss(reduction="sum")
+def train(model, dataloader, epochs=20):
+    opt = torch.optim.RMSprop(model.parameters())
+    loss = nn.CrossEntropyLoss(reduction="sum")
 
     for epoch in range(epochs):
-        sum_ploss = 0
-        count= 0
-        for x, y in zip(data, labels):
-            x = x.to(device) 
+        sum_loss = 0
+        for x, y in dataloader:
             opt.zero_grad()
-            f_c = model(dataset).to(device)
-            poison_loss_value = ploss(f_c, y)
-            poison_loss_value.backward()
+            f_c = model(x.float())
+            loss_value = loss(f_c, y)
+            loss_value.backward()
             opt.step()
-            count+=1
-            sum_ploss += poison_loss_value
+            sum_loss = loss_value
                     
-        print(f"Epoch {epoch}: ploss {sum_ploss/count}")
+        print(f"Epoch {epoch}: ploss {sum_loss}")
         count = 0
         sum_ploss = 0
 
     return model
+
+train(model, dl, 2)
 #%%
-train(model, dataset, labels, 20)
-#%%
-processed_dataset = model(dataset).detach().numpy()
-assigned_classes =[np.argmax(a) for a in model(dataset).detach().numpy()]
-plot_clusters(dataset,assigned_classes)
+res = model(features.float()).detach().numpy()
+assigned_classes =[np.argmax(a) for a in res]
+plot_clusters(features, assigned_classes)
 # %%
+model.fuzzy.A

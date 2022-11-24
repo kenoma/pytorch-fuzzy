@@ -28,7 +28,7 @@ class VariationalEncoder(nn.Module):
             [-0.3090169938, -0.9510565165], 
             [ 0.3090169938, -0.9510565165], 
             [ 0.8090169943, -0.5877852524], 
-            [ 1.,            0.          ]])
+            [ 1.,            0.          ]], trainable=True)
 
         self.N = torch.distributions.Normal(0, 1)
         self.N.loc = self.N.loc.cuda() 
@@ -68,11 +68,11 @@ class VariationalAutoencoder(nn.Module):
         return self.decoder(z), fz
 #%%
 def train(autoencoder, data, epochs=20):
-    opt = torch.optim.Adagrad(autoencoder.parameters())
-    ploss = nn.PoissonNLLLoss(reduction="sum")
+    opt = torch.optim.Adadelta(autoencoder.parameters())
+    ploss = nn.MSELoss(reduction="sum")
 
     for epoch in range(epochs):
-        sum_ploss = 0
+        sum_floss = 0
         sum_loss = 0
         count= 0
         for x, y in data:
@@ -80,22 +80,22 @@ def train(autoencoder, data, epochs=20):
             opt.zero_grad()
             x_hat,fz_x = autoencoder(x)
             gy = F.one_hot(y, num_classes=10).to(device)
-            poison_loss_value = ploss(fz_x, gy)
-            loss = ((x - x_hat)**2).sum() + autoencoder.encoder.kl 
-            #loss.backward(retain_graph=True)
-            poison_loss_value.backward()
+            fuzzy_loss_value = ploss(fz_x, gy.float())
+            loss = ((x - x_hat)**2).sum() + autoencoder.encoder.kl
+            loss.backward(retain_graph=True)
+            fuzzy_loss_value.backward()
             opt.step()
             count+=1
-            sum_ploss += poison_loss_value
+            sum_floss += fuzzy_loss_value
             sum_loss += loss
                     
-        print(f"Epoch {epoch}: loss {sum_loss/count} ploss {sum_ploss/count}")
+        print(f"Epoch {epoch}: loss {sum_loss/count} ploss {sum_floss/count}")
         count = 0
         sum_loss = 0
         sum_ploss = 0
 
     return autoencoder
-#%%
+
 latent_dims = 2
 data = torch.utils.data.DataLoader(
         torchvision.datasets.MNIST('./data', 
