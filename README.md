@@ -5,3 +5,4 @@ Experiments with fuzzy layers and neural nerworks
 
  - Get more fine-grained features from autoencoders
  - Semi-supervised learning
+ - Anomaly detections

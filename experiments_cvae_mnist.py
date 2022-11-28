@@ -82,17 +82,20 @@ def train(autoencoder, data, epochs=20):
             gy = F.one_hot(y, num_classes=10).to(device)
             fuzzy_loss_value = ploss(fz_x, gy.float())
             loss = ((x - x_hat)**2).sum() + autoencoder.encoder.kl
+
             loss.backward(retain_graph=True)
             fuzzy_loss_value.backward()
+            
+
             opt.step()
-            count+=1
+            count += 1
             sum_floss += fuzzy_loss_value
             sum_loss += loss
                     
         print(f"Epoch {epoch}: loss {sum_loss/count} ploss {sum_floss/count}")
         count = 0
         sum_loss = 0
-        sum_ploss = 0
+        sum_floss = 0
 
     return autoencoder
 
@@ -101,9 +104,9 @@ data = torch.utils.data.DataLoader(
         torchvision.datasets.MNIST('./data', 
                transform=torchvision.transforms.ToTensor(), 
                download=True),
-        batch_size=128,
+        batch_size=256,
         shuffle=True)
-vae = VariationalAutoencoder(latent_dims).to(device) # GPU
+vae = VariationalAutoencoder(latent_dims).to(device)
 vae = train(vae, data, 20)
 #%%
 def plot_latent(autoencoder, data, num_batches=100):
