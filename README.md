@@ -39,7 +39,7 @@ This dataset consists of 2D point coordinates and centroid belongingness as labe
 To each coordinate scaled noise component is added.
 Resulting clustered structures are shown on picture below. 
 
-![image](https://user-images.githubusercontent.com/6205671/211149059-b9194777-303a-4ee5-9d02-132535481119.png)
+![image](https://user-images.githubusercontent.com/6205671/211149392-3563ae02-c13b-4bef-b35c-ce89a1fe46e2.png)
 
 
 After training procedure completed (full code see [here](experiments_simple_clustering.py)) and correct points labeling is achieved uniform distribution classification performed. On picture below yellow points are not passed through threshold of any centroid belonginess.
