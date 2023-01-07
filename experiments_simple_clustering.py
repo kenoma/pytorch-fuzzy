@@ -13,14 +13,18 @@ from torch.utils.data import DataLoader
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 #%%
-def plot_clusters(z, labels):
-    plt.scatter(z[:, 0], z[:, 1], c=labels, s=3)
-    plt.colorbar()
+def plot_clusters(z, labels, title = ''):
+    fig = plt.figure(figsize=[5, 5])
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.scatter(z[:, 0], z[:, 1], c=labels, s=3)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_title(title)
 #%%
 class SimpleClustering(nn.Module):
     def __init__(self):
         super(SimpleClustering, self).__init__()
-        self.fuzzy = FuzzyLayer.fromdimentions(2, 5, trainable=True)
+        self.fuzzy = FuzzyLayer.fromdimentions(2, 4, trainable=True)
 
     def forward(self, x):
         return self.fuzzy(x)
@@ -39,21 +43,18 @@ class NoisyClustersDataset(Dataset):
         return rcl[0] * np.random.randn(2) + rcl[1:], cluster
 
 #%%
-ds = NoisyClustersDataset([[1,-1,-1], 
-                           [0.5,1,1], 
-                           [0.1,-1,1], 
-                           [0.3,1,-1],
-                           [0.1, 0, 0]], 10000)
+ds = NoisyClustersDataset([[0.1,-0.5,-0.5], 
+                           [0.1, 0.5, 0.5],
+                           [0.1, 0.5,-0.5],
+                           [0.1,-0.5, 0.5]], 10000)
 dl = DataLoader(ds, batch_size=256)
+features, labels = next(iter(dl))
+plot_clusters(features, labels, title='Initial dataset')
 #%%
 model = SimpleClustering()
-features, labels = next(iter(dl))
-processed_dataset = model(features.float()).detach().numpy()
-plot_clusters(features, labels)
-#%%
 res = model(features.float()).detach().numpy()
 assigned_classes =[np.argmax(a) for a in res]
-plot_clusters(features, assigned_classes)
+plot_clusters(features, assigned_classes, title='Initial cluster assignment')
 #%%
 def train(model, dataloader, epochs=20):
     opt = torch.optim.RMSprop(model.parameters())
@@ -67,18 +68,21 @@ def train(model, dataloader, epochs=20):
             loss_value = loss(f_c, y)
             loss_value.backward()
             opt.step()
-            sum_loss = loss_value
+            sum_loss += loss_value
                     
-        print(f"Epoch {epoch}: ploss {sum_loss}")
-        count = 0
-        sum_ploss = 0
+        print(f"Epoch {epoch}: loss {sum_loss}")
 
     return model
 
-train(model, dl, 2)
+train(model, dl, 3)
 #%%
 res = model(features.float()).detach().numpy()
 assigned_classes =[np.argmax(a) for a in res]
-plot_clusters(features, assigned_classes)
+plot_clusters(features, assigned_classes,title='Cluster assignment after few epoches')
 # %%
-model.fuzzy.A
+uniform_distr = np.random.uniform(-2,2, (10000, 2))
+res = model(torch.FloatTensor(uniform_distr)).detach().numpy()
+assigned_classes =[np.argmax(a) if a[np.argmax(a)]>6e-1 else 4 for a in res]
+plot_clusters(uniform_distr, assigned_classes,title='Uniform distribution classification (threshold 6e-1)')
+
+# %%
