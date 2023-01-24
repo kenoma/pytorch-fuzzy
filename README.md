@@ -45,6 +45,7 @@ Resulting clustered structures are shown on picture below.
 After training procedure completed (full code see [here](experiments_simple_clustering.py)) and correct points labeling is achieved uniform distribution classification performed. On picture below yellow points are not passed through threshold of any centroid belonginess.
 
 ![image](https://user-images.githubusercontent.com/6205671/211149065-b72b1e11-a538-479b-813a-df4e06ab115c.png)
+![image](https://user-images.githubusercontent.com/6205671/214388927-6e70dcf1-2323-4ac9-8589-144e96a6375d.png)
 
 On this primitive example we can see that `FuzzyLayer` is able to learn clustered structure of underlying manifold.
 In such a way `FuzzyLayer` can be used as anomaly detection algorithm if we interpret yellow points as outliers. 
