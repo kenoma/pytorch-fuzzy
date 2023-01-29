@@ -16,7 +16,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 def plot_clusters(z, labels, title = ''):
     fig = plt.figure(figsize=[5, 5])
     ax = fig.add_axes([0, 0, 1, 1])
-    ax.scatter(z[:, 0], z[:, 1], c=labels, s=3)
+    ax.scatter(z[:, 0], z[:, 1], c=labels, cmap='Accent', s=2)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_xlim(-1, 1)
@@ -76,15 +76,15 @@ def train(model, dataloader, epochs=20):
 
     return model
 
-train(model, dl, 3)
+train(model, dl, 35)
 #%%
 res = model(features.float()).detach().numpy()
 assigned_classes =[np.argmax(a) for a in res]
-plot_clusters(features, assigned_classes,title='Cluster assignment after few epoches')
+plot_clusters(features, assigned_classes, title='Cluster assignment after few epoches')
 # %%
 uniform_distr = np.random.uniform(-1, 1, (10000, 2))
 res = model(torch.FloatTensor(uniform_distr)).detach().numpy()
-assigned_classes =[np.argmax(a) if a[np.argmax(a)]>6e-1 else 4 for a in res]
-plot_clusters(uniform_distr, assigned_classes,title='Uniform distribution classification (threshold 6e-1)')
+assigned_classes =[np.argmax(a) if a[np.argmax(a)]>6e-1 else -1 for a in res]
+plot_clusters(uniform_distr, assigned_classes,title='Uniform distribution classification (threshold 6e-1, after 300 iterations)')
 
 # %%
