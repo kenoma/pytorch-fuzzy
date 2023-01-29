@@ -39,12 +39,13 @@ This dataset consists of 2D point coordinates and centroid belongingness as labe
 To each coordinate scaled noise component is added.
 Resulting clustered structures are shown on picture below. 
 
-![image](https://user-images.githubusercontent.com/6205671/211149059-b9194777-303a-4ee5-9d02-132535481119.png)
+![image](https://user-images.githubusercontent.com/6205671/211149471-9d850748-f40b-4acc-8250-331b5594ffe0.png)
 
 
 After training procedure completed (full code see [here](experiments_simple_clustering.py)) and correct points labeling is achieved uniform distribution classification performed. On picture below yellow points are not passed through threshold of any centroid belonginess.
 
 ![image](https://user-images.githubusercontent.com/6205671/211149065-b72b1e11-a538-479b-813a-df4e06ab115c.png)
+![image](https://user-images.githubusercontent.com/6205671/214388927-6e70dcf1-2323-4ac9-8589-144e96a6375d.png)
 
 On this primitive example we can see that `FuzzyLayer` is able to learn clustered structure of underlying manifold.
 In such a way `FuzzyLayer` can be used as anomaly detection algorithm if we interpret yellow points as outliers. 
