@@ -31,7 +31,6 @@ setup(
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Scientific/Engineering :: Fuzzy logic",
     'Operating System :: OS Independent'
   ],
   keywords='fuzzy',
