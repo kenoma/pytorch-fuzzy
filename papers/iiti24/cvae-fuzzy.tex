@@ -1,0 +1,83 @@
+\documentclass[runningheads]{llncs}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{color}
+%\renewcommand\UrlFont{\color{blue}\rmfamily}
+%\urlstyle{rm}
+%
+\begin{document}
+%
+\title{Conditional Variational Autoencoders with Fuzzy Inference}
+\titlerunning{CVAE Fuzzy Inference}
+%
+\author{Yury Gurov\inst{1}\orcidID{0000-0002-7033-9996} \and
+Danil Khilkov\inst{1}\orcidID{0000-0001-9284-6924}}
+\authorrunning{Y. Gurov and D. Khilkov}
+%
+\institute{NIIAS Institute of Informatization, Automation and Communication in Railway Transport, Russia, Moscow
+109029 Nizhegorodskaya str., 27 bldg. 1
+\email{info@vniias.ru}\\
+\url{www.vniias.ru/} 
+}
+%
+\maketitle              % typeset the header of the contribution
+%
+\begin{abstract}
+We present an approach to constructing Conditional Variational Autoencoders (C-VAE) models with fuzzy inference during classification.
+This preserves disentangling capabilities of VAE and at the same time performs latent space clusterization.
+Fuzzy C-VAE model provides useful features for anomaly detection, utilizing partially labeled datasets and controlled generation of new samples.
+%
+\keywords{fuzzy logic  \and deep learning \and fuzzy inference \and Conditional Variational Autoencoders \and fuzzy cvae \and neuro-fuzzy}
+\end{abstract}
+%
+%
+%
+\section{Introduction}
+
+Идей гибридных нейро-нечетких систем существует достаточно большое количество \cite{DECAMPOSSOUZA2020106275}.
+Особым интересом пользуются системы, которые позволяют получить одновременные преимущества глубоких нейросетевых моделей и human-like reasoning.
+В этой работе мы фокусируемся на задаче повышения интерпретируемости выводов внутренних слоев вариационных аутоэенкодеров \cite{kingma2022autoencoding,Kingma_2019}.
+Продолжением развития идей VAE явились conditional Variational Autoencoders \cite{debbagh2023learning}, в которых процесс моделирования выходного многообразия VAE управляется неким набором управляющих параметров, интерепретируемых как экспертное знание.
+
+
+\subsubsection{Contributions} In this work, we propose an fuzzy layer representation which can be used to learn conditional VAE models.
+
+
+The source code available in GitHub repository (https://github.com/kenoma/pytorch-fuzzy)
+
+\section{Related work}
+В этом направлении предпринимались определенные попытки применить нечеткую кластеризацию к латентому слою \cite{Bolat2020}.
+An amortised variational distribution for learning the missing auxiliary covariates and a method that maximises the evidence lower bound objective while simultaneously marginalising uncertainty associated with the missing covariates was introduced at \cite{RAMCHANDRAN2024110113}. 
+
+\section{Methods}
+
+\subsection{Problem setting}
+
+\subsection{Variational Autoencoders}
+
+\subsection{Conditional VAE}
+
+\subsection{Fuzzy inference}
+
+\subsection{Learning Fuzzy C-VAE}
+
+
+\section{Experiments}
+
+\subsection{Latent space clusterization}
+
+\subsection{Learning on partially labeled dataset}
+
+\subsection{Anomaly detection}
+
+\section{Discussion}
+
+In this paper, we introduced a novel fuzzy inference layer to improve the performance of conditional VAEs. 
+We achieve this by making trainable multidimentional representation of fuzzy term.
+The method that we proposed is applicable to a variety of conditional VAE models. 
+The efficacy of our proposed method was demonstrated on MNIST dataset. 
+
+\bibliographystyle{splncs04}
+\bibliography{refs}
+
+\end{document}
