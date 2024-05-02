@@ -8,7 +8,7 @@ import torchvision
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
-from fuzzy_layer import FuzzyLayer
+from torchfuzzy import FuzzyLayer
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 

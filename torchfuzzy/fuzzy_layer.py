@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 from torch import Tensor
 
+
 class FuzzyLayer(torch.nn.Module):
 
     def __init__(self, initial_centers, initial_scales, trainable=True):

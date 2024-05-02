@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from fuzzy_layer import FuzzyLayer
+from torchfuzzy import FuzzyLayer
 
 class BasicBlock(nn.Module):
     expansion = 1

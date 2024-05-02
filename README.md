@@ -7,6 +7,24 @@ Experiments with fuzzy layers and neural nerworks
  - Semi-supervised learning
  - Anomaly detections
 
+
+## Installation
+Package requirements:
+- torch>=1.8
+
+Installation via pip: 
+ ```
+ pip install torchfuzzy
+ ```
+
+## Usage
+
+ ```python
+from torchfuzzy import FuzzyLayer
+
+fuzzy_layer = FuzzyLayer.fromdimentions(2, 4, trainable=True)
+ ```
+
 ## Fuzzy layer
 
 Membership function for layer `FuzzyLayer` have form $\mu(x, A) = e^{ -|| \[A . \~x\]_{1 \cdots m} ||^2}$ where $m$ is task dimension,  $A$ is [transformation matrix](https://en.wikipedia.org/wiki/Transformation_matrix) in form 
