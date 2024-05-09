@@ -2,6 +2,8 @@
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage{color}
+\usepackage{amsmath}
+
 %\renewcommand\UrlFont{\color{blue}\rmfamily}
 %\urlstyle{rm}
 %
@@ -34,35 +36,101 @@ Fuzzy C-VAE model provides useful features for anomaly detection, utilizing part
 %
 \section{Introduction}
 
-Идей гибридных нейро-нечетких систем существует достаточно большое количество \cite{DECAMPOSSOUZA2020106275}.
-Особым интересом пользуются системы, которые позволяют получить одновременные преимущества глубоких нейросетевых моделей и human-like reasoning.
-В этой работе мы фокусируемся на задаче повышения интерпретируемости выводов внутренних слоев вариационных аутоэенкодеров \cite{kingma2022autoencoding,Kingma_2019}.
-Продолжением развития идей VAE явились conditional Variational Autoencoders \cite{debbagh2023learning}, в которых процесс моделирования выходного многообразия VAE управляется неким набором управляющих параметров, интерепретируемых как экспертное знание.
+Hybrid neuro-fuzzy systems has a long time history and is still an active research area \cite{DECAMPOSSOUZA2020106275}.
+Main feature that attract attemtion to neuro-fuzzy systems is possibility to combine the power of neural network with advantages of fuzzy logic, such a human-like reasoning.
+At this work we propose an approach to constructing Conditional Variational Autoencoders (C-VAE) \cite{kingma2022autoencoding,Kingma_2019,SohnCVAE} models with fuzzy inference during classification phase.
+This approach may preserve disentangling capabilities of VAE and at the same time performs latent space clusterization.
+Such fuzzy C-VAE model provides useful features for anomaly detection, utilization of partially labeled datasets and controlled generation of new samples.
 
-
-\subsubsection{Contributions} In this work, we propose an fuzzy layer representation which can be used to learn conditional VAE models.
-
-
-The source code available in GitHub repository (https://github.com/kenoma/pytorch-fuzzy)
+The source code is available at GitHub repository (https://github.com/kenoma/pytorch-fuzzy).
 
 \section{Related work}
-В этом направлении предпринимались определенные попытки применить нечеткую кластеризацию к латентому слою \cite{Bolat2020}.
-An amortised variational distribution for learning the missing auxiliary covariates and a method that maximises the evidence lower bound objective while simultaneously marginalising uncertainty associated with the missing covariates was introduced at \cite{RAMCHANDRAN2024110113}. 
+
+In \cite{Bolat2020} attempt to apply fuzzy logic to the latent space of VAE was made with fuzzy c-mean clustering.
+Main drawback of this approach is that it requires prior knowledge about problem domain number of clusters and their iterpretations.
+
+
+
+In \cite{RAMCHANDRAN2024110113} conditional VAE was modified in a way to process partially observed datasets. 
+Authors proposed method that augments the conditional VAEs with a prior distribution for the missing covariates and estimates their posterior using amortised variational inference.
+At first sigh this approach has nothing to do with fuzzy logic, but it provides insigh into the problem of latent space clustering.
+
+
 
 \section{Methods}
 
-\subsection{Problem setting}
-
 \subsection{Variational Autoencoders}
+Variational inference is used to approximate a posterior distribution of a directed graphical model whose latent variables and parameters are intractable.
+The Variational Auto-Encoder (VAE) combines this approach with an autoencoder framework to learn the prior distribution of a latent space, $p_\theta(z)$, with parameters $\theta$.
+The idea is that the prior distribution can then be sampled to produce a latent code, $z$, which is passed as input to the decoder to produce a sample output, $\tilde{x}$. 
+VAEs consists of two NN for the probabilistic encoding and decoding process (see Figure 1a). 
+As the true underlying distribution of the posterior is intractable and complex, a simple parametric surrogate distribution, $q_\Phi(z|x)$ (such as a Gaussian), with parameters $\Phi$, is assumed to approximate the distribution and is optimized for best fit. 
+The encoder network implicitly models the surrogate distribution, by mapping the distribution parameters, $\Phi$, during the training process. 
+The resulting model, $q_\Phi(z|x)$, is referred to as the recognition model. 
+The optimization process of the recognition model revolves around minimizing the Kullback-Leibler (KL) divergence between the posterior and surrogate distributions.
+Once the latent prior distribution is learned, $z$ can be sampled via the reparameterization trick.
+The (probabilistic) decoder network performs a mapping of the latent code to a structured sample output for each sample, thus producing a distribution of outputs, $p_\theta (x|z)$.
 
 \subsection{Conditional VAE}
+The C-VAE expands upon the framework of the VAE, by combining variational inference with a conditional directed graphical model. 
+In the case of C-VAE, the objective is to learn a prior distribution of the latent space that is conditioned on an input variable $y$ such that $p_\theta (z|y)$ (see Fig. \ref{fig:overview}b).
+The conditioning of the distributions results in a prior that is modulated, by the input variable, creating a method to control modality of the output. 
 
-\subsection{Fuzzy inference}
+\begin{figure}[h]  
+    \centering
+    \includegraphics[width=0.8\textwidth]{fig_1.pdf}
+    \caption{Overview of the $a)$ VAE $b)$ CVAE by \cite{SohnCVAE} and $c)$ proposed fuzzy C-VAE model.}
+    \label{fig:overview}
+\end{figure}
+
+\subsection{Fuzzy C-VAE}
+
+We propose C-VAE architecture where additional conditions are applied only to $/mu$ component in order to reorganize the latent space structure (see Fig\ref{fig:overview}c).
+Reorganization achieved by using fuzzy term functions, where each term associated with sole condition i.e. label.
+Multidimentional Gaussian function is used to represent the fuzzy term function:
+
+\[ 
+   \nu(z, A_i) = e^{|| [A_i . \tilde{z}]_{1 \cdots m} ||^2},
+\]
+where $m$ is a latent space dimension size, $i$ denotes term number, $\tilde{z} = [z_1, z_2, \cdots, z_m, 1]$ and $A_i$ is transformation matrix in form 
+
+\[ 
+    A_{(m+1) \times (m+1)}= 
+    \begin{bmatrix}
+        s_{1} & a_{12} & \cdots & a_{1m} & c_{1}\\
+        a_{21} & s_{2} & \cdots & a_{2m} & c_{2}\\
+        \vdots & \vdots & \ddots & \vdots & c_{3}\\
+        a_{m1} & a_{m2} & \cdots & s_{m} & c_{m}\\
+        0 & 0 & \cdots & 0 & 1
+    \end{bmatrix} 
+\]
+
+with $c_{1\cdots m}$ centroid position, $s_{1\cdots m}$ scaling factor and $a_{1\cdots m, 1\cdots m}$ as alignment coefficients.
+Such representation of multidimentional Gaussian term function easyly can be adopted for use in any modern machine learning framework.
+Set of $\nu(z, A_i)$ we call a fuzzy layer.
+Intuition behind fuzzy layer is that during training procedure every input vector $z$ will be forced to group closer near centroid of correspoinding term function.
+Disentangling features of VAE combined with clustering possibilities of fuzzy layer provides a way to learn suprvised latent space which can be useful for anomaly detection and other tasks we discuss further.
 
 \subsection{Learning Fuzzy C-VAE}
 
+To train fuzzy C-VAE we use the same loss function as in standard VAE with addition of fuzzy layer loss:
+
+\[
+    Loss = MSE(\tilde{x}, x) + KL(\mu, \log{\sigma^2}) + FZ(\tilde{y}, y),
+\]
+where $MSE(\tilde{x}, x)$ is reconstruction loss, $KL(\mu, \log{\sigma^2})$ is the KL-divergence (for more details see \cite{kingma2022autoencoding}) and $FZ(\tilde{y}, y)$ represents the mean squared error between the output and target conditional verctor.
+
+Main drawback of fuzzy layer is that in hight dimensional cases it's hard to find good initial values for centroids and scaling factors mainly due to vanishing gradients.
+Is such a case it is possible to pass to fuzzy layer subsection of vector $/mu$ leaving remained part to be trained by VAE without any conditional restrictions. 
+
 
 \section{Experiments}
+
+In this paper we would like to demonstrate ideas of fuzzy C-VAE on playground MNIST dataset.
+To make demostration fancy we provide additional label to samples of MNIST dataset.
+This label separates numbers with closed round loops in outline $0,6,8,9$ from numbers without it $1,2,3,4,5,7$.
+To make reasonable reconstruction loss we set size of the latent vector equal to 12 but only 2 first values of this vector are passed to fuzzy layer.
+The fuzzy CVAE model is trained using the Adam optimizer \cite{kingma2017adam}.
 
 \subsection{Latent space clusterization}
 
@@ -78,6 +146,6 @@ The method that we proposed is applicable to a variety of conditional VAE models
 The efficacy of our proposed method was demonstrated on MNIST dataset. 
 
 \bibliographystyle{splncs04}
-\bibliography{refs}
+\bibliography{refs.bib}
 
 \end{document}
