@@ -102,9 +102,8 @@ where $m$ is a latent space dimension size, $i$ denotes term number, $\tilde{z} 
         \vdots & \vdots & \ddots & \vdots & c_{3}\\
         a_{m1} & a_{m2} & \cdots & s_{m} & c_{m}\\
         0 & 0 & \cdots & 0 & 1
-    \end{bmatrix} 
+    \end{bmatrix},
 \]
-
 with $c_{1\cdots m}$ centroid position, $s_{1\cdots m}$ scaling factor and $a_{1\cdots m, 1\cdots m}$ as alignment coefficients.
 Such representation of multidimentional Gaussian term function easyly can be adopted for use in any modern machine learning framework.
 Set of $\nu(z, A_i)$ we call a fuzzy layer.
@@ -134,25 +133,62 @@ The fuzzy CVAE model is trained using the Adam optimizer \cite{kingma2017adam}.
 
 \subsection{Latent space clusterization}
 
-On Fig 
+On Figure \ref{fig:vae-clustering} is depicted latent space structure resulted by vanila VAE without any conditional restrictions.
+Despite the fact that points in VAE latent space are grouped in clusters corresponding to each number this structure has very complex topology.
+Without application of prior knowledge about number labels task of extracting corresponding clusters is very challenging.
+
+Passing label information directly to fuzzy C-VAE during training leads to fine grained latent space structure as shown on Figure \ref{fig:vae-clustering}.
+First two components of latent vector on which fuzzy layer is applied have formed clusters corresponding to each number.
+Meanwhile remained components of latent vector preserves complex topology like pure VAE.
+Reconstruction losses for VAE and fuzzy C-VAE during our experiments were almost the same while KL-loss for fuzzy C-VAE was slightly highter all the time.
+Classification accuracy of fuzzy C-VAE depends on many factors of network topology and training scenario but limit of 99\% is easily achieved.
+Figure \ref{fig:fcvae-classes} shows how fuzzy C-VAE is able to classify samples.
 
 \begin{figure}[h]  
     \centering
-    \includegraphics[width=0.8\textwidth]{fig2-a.eps}
-    \includegraphics[width=0.8\textwidth]{fig2-b.eps}
-    \caption{Latent space granulation for vanila VAE (top) and fuzzy C-VAE (bottom)}
+    \includegraphics[width=1\textwidth]{fig2a-vae-all-features.eps}
+    \includegraphics[width=1\textwidth]{fig2b-fcvae-all-features.eps}
+    
+    \caption{Latent space granulation for vanila VAE (top) and Fuzzy C-VAE (bottom)}
     \label{fig:clustering}
 \end{figure}
-\subsection{Learning on partially labeled dataset}
+
+\begin{figure}[h]  
+    \centering
+    \includegraphics[width=1\textwidth]{fig3-fcvae-classification.eps}
+    \caption{Fuzzy C-VAE latent space colored by true number labels (left) predicted number labels (center) and predicted outline class (right) }
+    \label{fig:fcvae-classes}
+\end{figure}
+
+\subsection{Controlled samples generation}
+
+After training procedure it is possible extract from matrices $A_i$ cluster characteristics such a centroids, scaling and aligment factors to understand latent space structure.
+Thats make possible use fuzzy C-VAE for sample generation with predefined characteristics as shown on Figure \ref{fig:samples-generation}.
+
+\begin{figure}[h]  
+    \centering
+    \includegraphics[width=1\textwidth]{fig4-sample-generation.eps}
+    \caption{Fuzzy C-VAE latent space colored by true number labels (left) predicted number labels (center) and predicted outline class (right) }
+    \label{fig:samples-generation}
+\end{figure}
 
 \subsection{Anomaly detection}
 
+Fuzzy C-VAE provides convinient way to design anomaly detection model.
+First of all every term at fuzzy layer defines a subdomain in latent space which is described through multidimentional Gaussian.
+
+
+
+\subsection{Learning on partially labeled dataset}
+
 \section{Discussion}
+
 
 In this paper, we introduced a novel fuzzy inference layer to improve the performance of conditional VAEs. 
 We achieve this by making trainable multidimentional representation of fuzzy term.
 The method that we proposed is applicable to a variety of conditional VAE models. 
 The efficacy of our proposed method was demonstrated on MNIST dataset. 
+Whereas fuzzy conditions influence on VAE should be discussed more deeply we leave it for future work. 
 
 \bibliographystyle{splncs04}
 \bibliography{refs.bib}
