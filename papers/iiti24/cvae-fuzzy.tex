@@ -42,16 +42,16 @@ At this work we propose an approach to constructing Conditional Variational Auto
 This approach may preserve disentangling capabilities of VAE and at the same time performs latent space clusterization.
 Such fuzzy C-VAE model provides useful features for anomaly detection, utilization of partially labeled datasets and controlled generation of new samples.
 
-The source code is available at GitHub repository (https://github.com/kenoma/pytorch-fuzzy).
+The source code is available at GitHub repository\footnote{https://github.com/kenoma/pytorch-fuzzy}.
 
 \section{Related work}
 
-In \cite{Bolat2020} attempt to apply fuzzy logic to the latent space of VAE was made with fuzzy c-mean clustering.
+In~\cite{Bolat2020} attempt to apply fuzzy logic to the latent space of VAE was made with fuzzy c-mean clustering.
 Main drawback of this approach is that it requires prior knowledge about problem domain number of clusters and their iterpretations.
 
 
 
-In \cite{RAMCHANDRAN2024110113} conditional VAE was modified in a way to process partially observed datasets. 
+In~\cite{RAMCHANDRAN2024110113} conditional VAE was modified in a way to process partially observed datasets. 
 Authors proposed method that augments the conditional VAEs with a prior distribution for the missing covariates and estimates their posterior using amortised variational inference.
 At first sigh this approach has nothing to do with fuzzy logic, but it provides insigh into the problem of latent space clustering.
 
@@ -79,7 +79,7 @@ The conditioning of the distributions results in a prior that is modulated, by t
 \begin{figure}[h]  
     \centering
     \includegraphics[width=0.8\textwidth]{fig_1.pdf}
-    \caption{Overview of the $a)$ VAE $b)$ CVAE by \cite{SohnCVAE} and $c)$ proposed fuzzy C-VAE model.}
+    \caption{Overview of the $a)$ VAE $b)$ CVAE by~\cite{SohnCVAE} and $c)$ proposed fuzzy C-VAE model.}
     \label{fig:overview}
 \end{figure}
 
@@ -117,7 +117,7 @@ To train fuzzy C-VAE we use the same loss function as in standard VAE with addit
 \[
     Loss = MSE(\tilde{x}, x) + KL(\mu, \log{\sigma^2}) + FZ(\tilde{y}, y),
 \]
-where $MSE(\tilde{x}, x)$ is reconstruction loss, $KL(\mu, \log{\sigma^2})$ is the KL-divergence (for more details see \cite{kingma2022autoencoding}) and $FZ(\tilde{y}, y)$ represents the mean squared error between the output and target conditional verctor.
+where $MSE(\tilde{x}, x)$ is reconstruction loss, $KL(\mu, \log{\sigma^2})$ is the KL-divergence (for more details see~\cite{kingma2022autoencoding}) and $FZ(\tilde{y}, y)$ represents the mean squared error between the output and target conditional verctor.
 
 Main drawback of fuzzy layer is that in hight dimensional cases it's hard to find good initial values for centroids and scaling factors mainly due to vanishing gradients.
 Is such a case it is possible to pass to fuzzy layer subsection of vector $/mu$ leaving remained part to be trained by VAE without any conditional restrictions. 
@@ -129,11 +129,11 @@ In this paper we would like to demonstrate ideas of fuzzy C-VAE on playground MN
 To make demostration fancy we provide additional label to samples of MNIST dataset.
 This label separates numbers with closed round loops in outline $0,6,8,9$ from numbers without it $1,2,3,4,5,7$.
 To make reasonable reconstruction loss we set size of the latent vector equal to 12 but only 2 first values of this vector are passed to fuzzy layer.
-The fuzzy CVAE model is trained using the Adam optimizer \cite{kingma2017adam}.
+The fuzzy CVAE model is trained using the Adam optimizer~\cite{kingma2017adam}.
 
 \subsection{Latent space clusterization}
 
-On Figure \ref{fig:vae-clustering} is depicted latent space structure resulted by vanila VAE without any conditional restrictions.
+On Figure~\ref{fig:vae-clustering} is depicted latent space structure resulted by vanila VAE without any conditional restrictions.
 Despite the fact that points in VAE latent space are grouped in clusters corresponding to each number this structure has very complex topology.
 Without application of prior knowledge about number labels task of extracting corresponding clusters is very challenging.
 
@@ -142,7 +142,7 @@ First two components of latent vector on which fuzzy layer is applied have forme
 Meanwhile remained components of latent vector preserves complex topology like pure VAE.
 Reconstruction losses for VAE and fuzzy C-VAE during our experiments were almost the same while KL-loss for fuzzy C-VAE was slightly highter all the time.
 Classification accuracy of fuzzy C-VAE depends on many factors of network topology and training scenario but limit of 99\% is easily achieved.
-Figure \ref{fig:fcvae-classes} shows how fuzzy C-VAE is able to classify samples.
+Figure~\ref{fig:fcvae-classes} shows how fuzzy C-VAE is able to classify samples.
 
 \begin{figure}[h]  
     \centering
@@ -175,11 +175,53 @@ Thats make possible use fuzzy C-VAE for sample generation with predefined charac
 \subsection{Anomaly detection}
 
 Fuzzy C-VAE provides convinient way to design anomaly detection model.
-First of all every term at fuzzy layer defines a subdomain in latent space which is described through multidimentional Gaussian.
+In a natural way every single term with underlying Gaussian distribution can provide mechanism to detect anomaly. 
 
+To demonstrate anomaly detection on MNIST we use EMNIST dataset~\cite{cohenafshartapsonschaik2017} with letters subset.
+Anomaly rate can be defined as 
+\[
+    r_{a} = \max_i \nu(z_{a}, A_i),
+\] 
+where $z_{a}$ is latent vector for an sample.
+Latent space for fuzzy C-VAE model was set to 12.
 
+In Table \ref{table-anomaly} we provide statistics for $r_{a}$ for letter which were never passed through fuzzy C-VAE model during training phase.
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{||c c c c||} 
+     \hline
+     Col1 & Col2 & Col2 & Col3 \\ [0.5ex] 
+     \hline\hline
+     1 & 6 & 87837 & 787 \\ 
+     2 & 7 & 78 & 5415 \\
+     3 & 545 & 778 & 7507 \\
+     4 & 545 & 18744 & 7560 \\
+     5 & 88 & 788 & 6344 \\ [1ex] 
+     \hline
+    \end{tabular}
+    \caption{}
+    \label{table-anomaly}
+\end{table}
 
 \subsection{Learning on partially labeled dataset}
+
+Structure of fuzzy C-VAE model allows to pass unlabeled data sample to update only VAE weight.
+To achieve this loss function has to be modified
+\[
+    Loss = MSE(\tilde{x}, x) + KL(\mu, \log{\sigma^2}) + \gamma * L(x, \tilde{y}, y),
+\]
+where $\gamma > 1$ is a hyperparameter that controls the influence of fuzzy part of model and
+\[
+    L(x, \tilde{y}, y) = \begin{cases}
+        0,&~x~\mbox{is~unlabeled}\\
+        FZ(\tilde{y}, y),&~x~\mbox{is~labeled}
+      \end{cases}.
+\]
+
+
+This feature can be useful with training on dataset with limited expert knowledge. 
+
 
 \section{Discussion}
 
