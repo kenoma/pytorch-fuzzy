@@ -76,7 +76,7 @@ The C-VAE expands upon the framework of the VAE, by combining variational infere
 In the case of C-VAE, the objective is to learn a prior distribution of the latent space that is conditioned on an input variable $y$ such that $p_\theta (z|y)$ (see Fig. \ref{fig:overview}b).
 The conditioning of the distributions results in a prior that is modulated, by the input variable, creating a method to control modality of the output. 
 
-\begin{figure}[h]  
+\begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{fig_1.pdf}
     \caption{Overview of the $a)$ VAE $b)$ CVAE by~\cite{SohnCVAE} and $c)$ proposed fuzzy C-VAE model.}
@@ -144,7 +144,7 @@ Reconstruction losses for VAE and fuzzy C-VAE during our experiments were almost
 Classification accuracy of fuzzy C-VAE depends on many factors of network topology and training scenario but limit of 99\% is easily achieved.
 Figure~\ref{fig:fcvae-classes} shows how fuzzy C-VAE is able to classify samples.
 
-\begin{figure}[h]  
+\begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{fig2a-vae-all-features.eps}
     \includegraphics[width=1\textwidth]{fig2b-fcvae-all-features.eps}
@@ -153,7 +153,7 @@ Figure~\ref{fig:fcvae-classes} shows how fuzzy C-VAE is able to classify samples
     \label{fig:clustering}
 \end{figure}
 
-\begin{figure}[h]  
+\begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{fig3-fcvae-classification.eps}
     \caption{Fuzzy C-VAE latent space colored by true number labels (left) predicted number labels (center) and predicted outline class (right) }
@@ -165,7 +165,7 @@ Figure~\ref{fig:fcvae-classes} shows how fuzzy C-VAE is able to classify samples
 After training procedure it is possible extract from matrices $A_i$ cluster characteristics such a centroids, scaling and aligment factors to understand latent space structure.
 Thats make possible use fuzzy C-VAE for sample generation with predefined characteristics as shown on Figure \ref{fig:samples-generation}.
 
-\begin{figure}[h]  
+\begin{figure} 
     \centering
     \includegraphics[width=1\textwidth]{fig4-sample-generation.eps}
     \caption{Fuzzy C-VAE latent space colored by true number labels (left) predicted number labels (center) and predicted outline class (right) }
@@ -207,6 +207,7 @@ In Table \ref{table-anomaly} we provide statistics for $r_{a}$ for letter which 
 \subsection{Learning on partially labeled dataset}
 
 Structure of fuzzy C-VAE model allows to pass unlabeled data sample to update only VAE weight.
+This feature can be useful with training on dataset with limited expert knowledge in order to make VAE part of model more reliable.
 To achieve this loss function has to be modified
 \[
     Loss = MSE(\tilde{x}, x) + KL(\mu, \log{\sigma^2}) + \gamma * L(x, \tilde{y}, y),
@@ -219,12 +220,18 @@ where $\gamma > 1$ is a hyperparameter that controls the influence of fuzzy part
       \end{cases}.
 \]
 
+On Fugure~\ref{fig:accuracy-vs-unlabeled-rate} we provide model performance on MNIST dataset with different unlabeled rate.
 
-This feature can be useful with training on dataset with limited expert knowledge. 
+\begin{figure}[h]  
+    \centering
+    \includegraphics[width=1\textwidth]{fig5-accuracy-vs-unlabeled-rate.png}
+    \caption{ Model test set accuracy on MNIST dataset with different unlabeled rate. }\label{fig:accuracy-vs-unlabeled-rate}
+\end{figure}
 
+With this results we can conclude that it's reasonable to pass unlabeled samples during trainig to maintain better reconstruction quality.
+On the other side presented technique may be useful during markup phase to determine while dataset sufficiently labeled and further markup is not useful
 
 \section{Discussion}
-
 
 In this paper, we introduced a novel fuzzy inference layer to improve the performance of conditional VAEs. 
 We achieve this by making trainable multidimentional representation of fuzzy term.
