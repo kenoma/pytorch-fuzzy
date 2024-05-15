@@ -22,7 +22,7 @@ Danil Khilkov\inst{1}\orcidID{0000-0001-9284-6924}}
 \url{www.vniias.ru/} 
 }
 %
-\maketitle              % typeset the header of the contribution
+\maketitle              
 %
 \begin{abstract}
 We present an approach to constructing Conditional Variational Autoencoders (C-VAE) models with fuzzy inference during classification.
@@ -47,8 +47,7 @@ The source code is available at GitHub repository\footnote{https://github.com/ke
 \section{Related work}
 
 In~\cite{Bolat2020} attempt to apply fuzzy logic to the latent space of VAE was made with fuzzy c-mean clustering.
-Main drawback of this approach is that it requires prior knowledge about problem domain number of clusters and their iterpretations.
-
+Main drawback of of this approach is that it requires a priori knowledge about the number of clusters and their interpretation
 
 
 In~\cite{RAMCHANDRAN2024110113} conditional VAE was modified in a way to process partially observed datasets. 
@@ -78,7 +77,7 @@ The conditioning of the distributions results in a prior that is modulated, by t
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{fig_1.pdf}
+    \includegraphics[width=0.95\textwidth]{fig_1.pdf}
     \caption{Overview of the $a)$ VAE $b)$ CVAE by~\cite{SohnCVAE} and $c)$ proposed fuzzy C-VAE model.}
     \label{fig:overview}
 \end{figure}
@@ -92,19 +91,19 @@ Multidimentional Gaussian function is used to represent the fuzzy term function:
 \[ 
    \nu(z, A_i) = e^{|| [A_i . \tilde{z}]_{1 \cdots m} ||^2},
 \]
-where $m$ is a latent space dimension size, $i$ denotes term number, $\tilde{z} = [z_1, z_2, \cdots, z_m, 1]$ and $A_i$ is transformation matrix in form 
+where $m$ is a size of latent space, $i$ \- term number, $\tilde{z} = [z_1, z_2, \ldots, z_m, 1]$ and $A_i$ is transformation matrix in form 
 
 \[ 
     A_{(m+1) \times (m+1)}= 
     \begin{bmatrix}
-        s_{1} & a_{12} & \cdots & a_{1m} & c_{1}\\
-        a_{21} & s_{2} & \cdots & a_{2m} & c_{2}\\
-        \vdots & \vdots & \ddots & \vdots & c_{3}\\
-        a_{m1} & a_{m2} & \cdots & s_{m} & c_{m}\\
+        a_{1,1} & a_{1,2} & \cdots & a_{1,m} & c_{1}\\
+        a_{2,1} & a_{2,1} & \cdots & a_{2,m} & c_{2}\\
+        \vdots & \vdots & \ddots & \vdots & \vdots \\
+        a_{m,1} & a_{m,2} & \cdots & a_{m,m} & c_{m}\\
         0 & 0 & \cdots & 0 & 1
     \end{bmatrix},
 \]
-with $c_{1\cdots m}$ centroid position, $s_{1\cdots m}$ scaling factor and $a_{1\cdots m, 1\cdots m}$ as alignment coefficients.
+with $c_{1\cdots m}$ centroid position and $a_{k,l}$ is a matrix responsible for scaling and aligment of Gaussian in $m$-dimensional space.
 Such representation of multidimentional Gaussian term function easyly can be adopted for use in any modern machine learning framework.
 Set of $\nu(z, A_i)$ we call a fuzzy layer.
 Intuition behind fuzzy layer is that during training procedure every input vector $z$ will be forced to group closer near centroid of correspoinding term function.
@@ -125,45 +124,48 @@ Is such a case it is possible to pass to fuzzy layer subsection of vector $/mu$ 
 
 \section{Experiments}
 
-In this paper we would like to demonstrate ideas of fuzzy C-VAE on playground MNIST dataset.
-To make demostration fancy we provide additional label to samples of MNIST dataset.
-This label separates numbers with closed round loops in outline $0,6,8,9$ from numbers without it $1,2,3,4,5,7$.
-To make reasonable reconstruction loss we set size of the latent vector equal to 12 but only 2 first values of this vector are passed to fuzzy layer.
-The fuzzy CVAE model is trained using the Adam optimizer~\cite{kingma2017adam}.
+In this paper we would like to demonstrate ideas of fuzzy C-VAE on playground MNIST dataset~\cite{deng2012mnist} in comparison to vanilla VAE.
+For demonstation purposes we will use 2 dimensional latent space.
+Network topology for VAE and fuzzy C-VAE are identical in common encoding and decoding part (see Figure \ref{fig:overview}) and differs only in fuzzy layer.
+Both models are trained using the Adam optimizer~\cite{kingma2017adam}.
 
 \subsection{Latent space clusterization}
 
-On Figure~\ref{fig:vae-clustering} is depicted latent space structure resulted by vanila VAE without any conditional restrictions.
-Despite the fact that points in VAE latent space are grouped in clusters corresponding to each number this structure has very complex topology.
+On Figure~\ref{fig:clustering} is depicted latent space structure resulted by pure VAE without any conditional restrictions.
+Cluster structure is not very clear and for some clusters it is not possible to separate.
 Without application of prior knowledge about number labels task of extracting corresponding clusters is very challenging.
+Passing label information directly to fuzzy C-VAE during training leads to more fine-grained latent space structure.
 
-Passing label information directly to fuzzy C-VAE during training leads to fine grained latent space structure as shown on Figure \ref{fig:vae-clustering}.
-First two components of latent vector on which fuzzy layer is applied have formed clusters corresponding to each number.
-Meanwhile remained components of latent vector preserves complex topology like pure VAE.
 Reconstruction losses for VAE and fuzzy C-VAE during our experiments were almost the same while KL-loss for fuzzy C-VAE was slightly highter all the time.
-Classification accuracy of fuzzy C-VAE depends on many factors of network topology and training scenario but limit of 99\% is easily achieved.
-Figure~\ref{fig:fcvae-classes} shows how fuzzy C-VAE is able to classify samples.
+
+Classification accuracy of fuzzy C-VAE on 2d case is fairly poor 97\% but better results can be achieved with larger latern vectors sizes.
+
+Figure~\ref{fig:fcvae-classes} shows how fuzzy C-VAE is able to classify numbers.
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\textwidth]{fig2a-vae-all-features.eps}
-    \includegraphics[width=1\textwidth]{fig2b-fcvae-all-features.eps}
+    \includegraphics[width=0.45\textwidth]{fig2a-vae-all-features.eps}
+    \includegraphics[width=0.45\textwidth]{fig2b-fcvae-all-features.eps}
     
-    \caption{Latent space granulation for vanila VAE (top) and Fuzzy C-VAE (bottom)}
+    \caption{Latent space granulation for vanila VAE (left) and Fuzzy C-VAE (right)}
     \label{fig:clustering}
 \end{figure}
 
 \begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{fig3-fcvae-classification.eps}
-    \caption{Fuzzy C-VAE latent space colored by true number labels (left) predicted number labels (center) and predicted outline class (right) }
+    \caption{Fuzzy C-VAE latent space colored by true number labels (left) predicted number labels (center) and number domais at latent space directed by fuzzy layer (right) }
     \label{fig:fcvae-classes}
 \end{figure}
 
 \subsection{Controlled samples generation}
 
-After training procedure it is possible extract from matrices $A_i$ cluster characteristics such a centroids, scaling and aligment factors to understand latent space structure.
-Thats make possible use fuzzy C-VAE for sample generation with predefined characteristics as shown on Figure \ref{fig:samples-generation}.
+After training procedure cluster properties such as mean and variance can be obtained.
+This allows us to get an idea of the relationships between clusters and to plan the generation of new samples with predefined properties.
+Figure~\ref{fig:samples-generation} demonstrates example how the digit 7 is purposely made into the digit 9. 
+
+Not all transitions from one digit to another are possible without crossing clusters of other digits.
+However, interpreted topology of the latent space gives more possibilities for generating synthetic samples.
 
 \begin{figure} 
     \centering
@@ -174,56 +176,54 @@ Thats make possible use fuzzy C-VAE for sample generation with predefined charac
 
 \subsection{Anomaly detection}
 
-Fuzzy C-VAE provides convinient way to design anomaly detection model.
-In a natural way every single term with underlying Gaussian distribution can provide mechanism to detect anomaly. 
+For anomaly detections, fuzzy C-VAE model provides a number of possibilities. 
+Here we present a straightforward approach and leave more complex scenarios for future work.
+The idea is that clusters in the latent space after model training are represented by localized groups of points with not very complex structure.
+This make possible to apply standart anomaly detection routine to every individual cluster.
+As anomalous samples we used the EMNIST~\cite{cohenafshartapsonschaik2017} dataset which has alphabetic characters never seen by trained models.
 
-To demonstrate anomaly detection on MNIST we use EMNIST dataset~\cite{cohenafshartapsonschaik2017} with letters subset.
-Anomaly rate can be defined as 
-\[
-    r_{a} = \max_i \nu(z_{a}, A_i),
-\] 
-where $z_{a}$ is latent vector for an sample.
-Latent space for fuzzy C-VAE model was set to 12.
-
-In Table \ref{table-anomaly} we provide statistics for $r_{a}$ for letter which were never passed through fuzzy C-VAE model during training phase.
+Isolated forest~\cite{LiuIsoforest} classifier was used for anomaly detection to both the fuzzy C-VAE and VAE representations.
+Results are summarized in Table~\ref{table-anomaly}.
+Fuzzy C-VAE model with isolation forest demonstrate quite interpretable results, in which the anomaly detection rate are worse for those symbols whose outlines look more like digits.
+At the same time for VAE straightforward approach does not work well and it is clear that more sophisticated approach is required.
 
 \begin{table}[h!]
     \centering
-    \begin{tabular}{lr}
-        Symbols & Detected anomaly rate \\
-        0123456789 & 0.18 \\
-        Oo & 0.36 \\
-        Ww & 0.39 \\
-        Nn & 0.61 \\
-        Mm & 0.62 \\
-        Ii & 0.63 \\
-        Ff & 0.65 \\
-        Vv & 0.66 \\
-        Uu & 0.69 \\
-        Ll & 0.70 \\
-        Aa & 0.71 \\
-        Pp & 0.71 \\
-        Tt & 0.73 \\
-        Dd & 0.75 \\
-        Gg & 0.76 \\
-        Qq & 0.76 \\
-        Yy & 0.78 \\
-        Bb & 0.79 \\
-        Kk & 0.79 \\
-        Cc & 0.80 \\
-        Hh & 0.81 \\
-        Ee & 0.82 \\
-        Ss & 0.82 \\
-        Rr & 0.83 \\
-        Jj & 0.85 \\
-        Zz & 0.86 \\
-        Xx & 0.89 \\
+    \begin{tabular}{ c c c }
+        \hline
+        Symbols & Fuzzy CVAE & VAE \\
+        \hline\hline
+        0123456789 & 0.18 & 0.32 \\
+        Oo & 0.36 & 0.91 \\
+        Ww & 0.39 & 0.01 \\
+        Nn & 0.61 & 0.24 \\
+        Mm & 0.62 & 0.01 \\
+        Ii & 0.63 & 0.24 \\
+        Ff & 0.65 & 0.08 \\
+        Vv & 0.66 & 0.15 \\
+        Uu & 0.69 & 0.14 \\
+        Ll & 0.70 & 0.33 \\
+        Aa & 0.71 & 0.47 \\
+        Pp & 0.71 & 0.11 \\
+        Tt & 0.73 & 0.16 \\
+        Dd & 0.75 & 0.64 \\
+        Gg & 0.76 & 0.54 \\
+        Qq & 0.76 & 0.61 \\
+        Yy & 0.78 & 0.08 \\
+        Bb & 0.79 & 0.61 \\
+        Kk & 0.79 & 0.29 \\
+        Cc & 0.80 & 0.83 \\
+        Hh & 0.81 & 0.23 \\
+        Ee & 0.82 & 0.55 \\
+        Ss & 0.82 & 0.63 \\
+        Rr & 0.83 & 0.13 \\
+        Jj & 0.85 & 0.42 \\
+        Zz & 0.86 & 0.79 \\
+        Xx & 0.89 & 0.20 \\
     \end{tabular}        
-    \caption{Anomaly rate for symbols from MNIST and EMNIST datasets}
+    \caption{Anomaly detection rates for symbols from MNIST and EMNIST datasets}
     \label{table-anomaly}
 \end{table}
-
-
 
 \subsection{Learning on partially labeled dataset}
 
