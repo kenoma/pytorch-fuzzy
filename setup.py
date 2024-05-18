@@ -36,3 +36,4 @@ setup(
   keywords='fuzzy',
   python_requires='>=3.7'
 )
+
