@@ -14,7 +14,7 @@ from utils import get_data, predict, class_scatter
 device = 'cuda:0'
 
 batch_size = 64
-num_epochs = 35
+num_epochs = 50
 learning_rate = 2e-3
 weight_decay = 1e-2
 

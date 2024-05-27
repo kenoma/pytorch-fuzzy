@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-
+import string
 from cvae import CVAE, Encoder, Decoder
 from torchfuzzy.fuzzy_layer import FuzzyLayer
 
@@ -14,12 +14,11 @@ fraction = 10
 model_path = f"./runs/mnist/fz_{latent_dim}_12.pt"
 
 points = [
-        # 8 to 2 (across 3)
-        #([0.441, -0.508], [0.642, -0.05]),
-        #([0.582, -0.763], [1.639, -0.065]),
-        # # 6 to 1
+        # 6 to 1
         ([-1.578, -0.277], [-0.81, -1.026]),
         ([-0.625, -0.222], [-0.521, 0.762]),
+        # 6 to 6
+        ([-1.578, -0.277], [-0.625, -0.222])
     ]
 
 
@@ -46,8 +45,8 @@ if __name__ == '__main__':
         dedicated_space_ax.plot([from_point[0], to_point[0]], [from_point[1], to_point[1]], 'o-', color='black')
         path = np.linspace(from_point, to_point, fraction)
         path = [torch.FloatTensor(a) for a in path]
-        space_ax.text(*(path[fraction // 2] + 0.03), "a" if points_index == 0 else "b")
-        dedicated_space_ax.text(*(path[fraction // 2] + 0.03), "a" if points_index == 0 else "b")
+        space_ax.text(*(path[fraction // 2] + 0.03), string.ascii_lowercase[points_index])
+        dedicated_space_ax.text(*(path[fraction // 2] + 0.03), string.ascii_lowercase[points_index])
 
         z = torch.stack(path, dim=0).to(device)
 
@@ -61,9 +60,8 @@ if __name__ == '__main__':
             axs[points_index + axbig_size, i].imshow(samples[i].view(28, 28).cpu().detach().numpy(), cmap='gray')
             axs[points_index + axbig_size, i].axis('off')
             if i == fraction // 2:
-                axs[points_index + axbig_size, i].set_title("a" if points_index == 0 else "b")
-        suffix = "b" if points_index == 0 else "c"
-        dedicated_fig.savefig(f'./papers/iiti24/fig4{suffix}-sample-generation.eps', format='eps')
+                axs[points_index + axbig_size, i].set_title(string.ascii_lowercase[points_index])
+        dedicated_fig.savefig(f'./papers/iiti24/fig4{string.ascii_lowercase[points_index + 1]}-sample-generation.eps', format='eps')
         plt.close(dedicated_fig)
 
     dedicated_space_fig.savefig(f'./papers/iiti24/fig4a-sample-generation.eps', format='eps')
