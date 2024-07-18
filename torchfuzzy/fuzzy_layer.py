@@ -32,13 +32,13 @@ class FuzzyLayer(torch.nn.Module):
         self.A = nn.Parameter(a, requires_grad=trainable) 
 
     @classmethod
-    def fromdimentions(cls, size_in, size_out, trainable=True):
+    def from_dimensions(cls, size_in, size_out, trainable=True):
         initial_centers = torch.randn((size_out, size_in))
         initial_scales = torch.ones((size_out, size_in))
         return cls(initial_centers, initial_scales, trainable)
 
     @classmethod
-    def fromcenters(cls, initial_centers, trainable=True):
+    def from_centers(cls, initial_centers, trainable=True):
         initial_centers =  np.multiply(-1, initial_centers)
         sizes = np.shape(initial_centers)
         initial_scales = torch.ones(sizes)
