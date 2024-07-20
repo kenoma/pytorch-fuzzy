@@ -97,10 +97,10 @@ Mamdani fuzzy model can be represented as a ruleset:
 where $y_{i}$ is an scalar. Mamdani inference is denoted as:
 
 ```math
-Output = \frac{\sum(\mu(x, A_{i})*y_{i})}{\sum(\mu(x, A_{i}))}
+Output = \frac{\sum \mu(x, A_{i})*y_{i}}{\sum \mu(x, A_{i})}
 ```
 
-Implementation with `FuzzyLayer` take form:
+Implementation with `FuzzyLayer`:
 
 ```python
 mamdani_fis = nn.Sequential(
@@ -109,6 +109,10 @@ mamdani_fis = nn.Sequential(
     nn.Linear(fuzzy_rules_count, output_dimention, bias=False)
     )
 ```
+
+Training on MNIST classification task with 2D feature space results in following manifold structure:
+![image](https://github.com/user-attachments/assets/eba30021-27ce-424f-81cd-45c03493ff58)
+
 
 ## Publications
 
