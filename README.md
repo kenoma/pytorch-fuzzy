@@ -1,29 +1,26 @@
 # pytorch-fuzzy
+
 Experiments with fuzzy layers and neural nerworks
 
 ## Goals
 
- - Get more fine-grained features from autoencoders
- - Semi-supervised learning
- - Anomaly detections
-
+- Get more fine-grained features from autoencoders
+- Semi-supervised learning
+- Anomaly detections
 
 ## Installation
+
 Package requirements:
-- torch>=1.8
 
-Installation via pip: 
- ```
+`
+torch>=1.8
+`
+
+Installation via pip:
+
+```python
  pip install torchfuzzy
- ```
-
-## Usage
-
- ```python
-from torchfuzzy import FuzzyLayer
-
-fuzzy_layer = FuzzyLayer.fromdimentions(2, 4, trainable=True)
- ```
+```
 
 ## Fuzzy layer
 
@@ -49,7 +46,6 @@ $x = [x_1, x_2, \cdots, x_m, 1]$.
 
 `FuzzyLayer` stores and tunes set of matricies $A^{n}, n = 1 \dots N$ where $N$ is layer's output dimension.
 
-
 ## How it works
 
 Let's demonstrate how `FuzzyLayer` works on simple 2D case generating dataset with four centroids. 
@@ -69,5 +65,51 @@ On this primitive example we can see that `FuzzyLayer` is able to learn clustere
 In such a way `FuzzyLayer` can be used as anomaly detection algorithm if we interpret yellow points as outliers. 
 But more interesting application of `FuzzyLayer` is clusterization of another model outputs to get more fine-grained results.
 
+## Usage
 
+### Basic
 
+```python
+from torchfuzzy import FuzzyLayer
+
+x = torch.rand((10,2))
+
+fuzzy_layer = FuzzyLayer.from_dimensions(2, 4)
+
+inference = fuzzy_layer.forward(x)
+
+```
+
+### Mamdani-like inference
+
+Full example [see here](experiments_mamdani_mnist.ipynb).
+
+Mamdani fuzzy model can be represented as a ruleset:
+
+```math
+    \begin{array}{lcll}
+        \text{Rule}_{i-1} & : &\mathbf{IF}\ x\; is\; A_{i-1}\ &\mathbf{THEN}\ y_{i-1},\\
+        \text{Rule}_{i}   & : &\mathbf{IF}\ x\; is\; A_{i  }\ &\mathbf{THEN}\ y_{i},\\
+        \text{Rule}_{i+1} & : &\mathbf{IF}\ x\; is\; A_{i+1}\ &\mathbf{THEN}\ y_{i+1},\\
+    \end{array}
+```
+
+where $y_{i}$ is an scalar. Mamdani inference is denoted as:
+
+```math
+Output = \frac{\sum(\mu(x, A_{i})*y_{i})}{\sum(\mu(x, A_{i}))}
+```
+
+Implementation with `FuzzyLayer` take form:
+
+```python
+mamdani_fis = nn.Sequential(
+    FuzzyLayer.from_dimensions(input_dimention, fuzzy_rules_count, trainable=True),
+    nn.Softmax(1),
+    nn.Linear(fuzzy_rules_count, output_dimention, bias=False)
+    )
+```
+
+## Publications
+
+[Variational Autoencoders with Fuzzy Inference (Russian)](https://habr.com/ru/articles/803789/)

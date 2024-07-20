@@ -4,6 +4,9 @@ import numpy as np
 from torch import Tensor
 
 class DefuzzyLinearLayer(torch.nn.Module):
+    """
+    WIP, use it on own risk
+    """
 
     def __init__(self, initial_consequences):
         """
@@ -27,5 +30,5 @@ class DefuzzyLinearLayer(torch.nn.Module):
         
         norm_inp = input / input.sum(-1).reshape((batch_size, 1)).expand((batch_size, self.size_in))
         
-        return torch.squeeze(torch.bmm(rep_z, norm_inp.reshape(batch_size, self.size_in, 1)),2)
+        return torch.squeeze(torch.bmm(rep_z, norm_inp.reshape(batch_size, self.size_in, 1)), 2)
 
