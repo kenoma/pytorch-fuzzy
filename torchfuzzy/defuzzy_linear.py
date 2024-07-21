@@ -22,6 +22,11 @@ class DefuzzyLinearLayer(torch.nn.Module):
     def from_dimensions(cls, size_in, size_out):
         Z = torch.rand(size_out, size_in)
         return cls(Z)
+    
+    @classmethod
+    def from_array(cls, initial_array):
+        Z = torch.FloatTensor(np.array(initial_array))
+        return cls(Z)
 
     def forward(self, input: Tensor) -> Tensor:
         batch_size = input.shape[0]

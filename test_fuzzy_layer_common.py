@@ -3,11 +3,11 @@ from torchfuzzy import FuzzyLayer
 import torch
 
 def test_fromcenters_correct_initialization():
-    model = FuzzyLayer.fromcenters([[1,2,3]])
+    model = FuzzyLayer.from_centers([[1,2,3]])
     assert model.A.shape == (1,3,4)
 
 def test_fromdimentions_correct_initialization():
-    model = FuzzyLayer.fromdimentions(4,7)
+    model = FuzzyLayer.from_dimensions(4,7)
     assert model.A.shape == (7, 4, 5)
     
 def test_1d_input_1d_output():
