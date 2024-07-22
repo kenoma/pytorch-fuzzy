@@ -97,7 +97,7 @@ Mamdani fuzzy model can be represented as a ruleset:
 where $y_{i}$ is an scalar. Mamdani inference is denoted as:
 
 ```math
-Output = \frac{\sum(\mu(x, A_{i})*y_{i})}{\sum(\mu(x, A_{i}))}
+Output = \frac{\sum \mu(x, A_{i})*y_{i}}{\sum \mu(x, A_{i})}
 ```
 
 Straightforward implementation with `FuzzyLayer`:
