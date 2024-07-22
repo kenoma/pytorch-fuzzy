@@ -4,9 +4,6 @@ import numpy as np
 from torch import Tensor
 
 class DefuzzyLinearLayer(torch.nn.Module):
-    """
-    WIP, use it on own risk
-    """
 
     def __init__(self, initial_consequences):
         """

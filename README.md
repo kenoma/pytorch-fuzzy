@@ -100,7 +100,7 @@ where $y_{i}$ is an scalar. Mamdani inference is denoted as:
 Output = \frac{\sum(\mu(x, A_{i})*y_{i})}{\sum(\mu(x, A_{i}))}
 ```
 
-Implementation with `FuzzyLayer` take form:
+Straightforward implementation with `FuzzyLayer`:
 
 ```python
 mamdani_fis = nn.Sequential(
@@ -108,6 +108,15 @@ mamdani_fis = nn.Sequential(
     nn.Softmax(1),
     nn.Linear(fuzzy_rules_count, output_dimention, bias=False)
     )
+```
+
+Более корректная реализация реализована в слое DeffuzyLayer, структура сети приобретает вид
+
+```python
+mamdani_fis = nn.Sequential(
+            FuzzyLayer.from_dimensions(input_dimention, fuzzy_rules_count, trainable=True),
+            DefuzzyLinearLayer.from_dimensions(fuzzy_rules_count, output_dimention)
+        )
 ```
 
 ## Publications
