@@ -110,7 +110,7 @@ mamdani_fis = nn.Sequential(
     )
 ```
 
-Более корректная реализация реализована в слое DeffuzyLayer, структура сети приобретает вид
+A more correct implementation is implemented in the `DefuzzyLinearLayer`, the network structure takes the following form
 
 ```python
 mamdani_fis = nn.Sequential(
