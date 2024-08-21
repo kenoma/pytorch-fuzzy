@@ -131,3 +131,12 @@ dmypy.json
 # IDE
 .idea
 .vscode
+
+data
+/data
+/runs
+/data/*.*
+/data/EMNIST/emnist-letters.csv
+/data/EMNIST/emnist-letters-mapping.txt
+.gz
+*-ubyte

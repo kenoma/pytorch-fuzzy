@@ -43,6 +43,11 @@ class FuzzyLayer(torch.nn.Module):
         sizes = np.shape(initial_centers)
         initial_scales = torch.ones(sizes)
         return cls(initial_centers, initial_scales, trainable)
+    
+    @classmethod
+    def from_centers_and_scales(cls, initial_centers, initial_scales, trainable=True):
+        initial_centers =  np.multiply(-1, initial_centers)
+        return cls(initial_centers, initial_scales, trainable)
 
     def forward(self, input: Tensor) -> Tensor:
         batch_size = input.shape[0]
