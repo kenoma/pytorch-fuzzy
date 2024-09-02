@@ -4,11 +4,13 @@ import torch
 
 def test_fromcenters_correct_initialization():
     model = FuzzyLayer.from_centers([[1,2,3]])
-    assert model.A.shape == (1,3,4)
+    assert model.scales_and_rot.shape == (1,3, 3)
+    assert model.centroids.shape == (1, 3, 1)
 
 def test_fromdimentions_correct_initialization():
     model = FuzzyLayer.from_dimensions(4,7)
-    assert model.A.shape == (7, 4, 5)
+    assert model.scales_and_rot.shape == (7, 4, 4)
+    assert model.centroids.shape == (7, 4, 1)
     
 def test_1d_input_1d_output():
     batch_size = 1
