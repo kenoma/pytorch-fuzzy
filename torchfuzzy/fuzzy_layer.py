@@ -77,4 +77,14 @@ class FuzzyLayer(torch.nn.Module):
 
     def set_requires_grad_centroids(self, requires_grad):
         self.centroids.requires_grad = requires_grad
+    
+    def get_transformation_matrix(self):
+        A = torch.diag_embed(self.scales, 0)
+        for i in range(self.size_in - 1):
+            A = A + torch.diag_embed(self.rots[i], i+1)
+            A = A +torch.diag_embed(self.rots[i], i+1, -1, -2)
+        A = torch.cat((A, self.centroids), 2)
+        ta = torch.cat([A, self.c_r], 1)
+        return ta
+
 
