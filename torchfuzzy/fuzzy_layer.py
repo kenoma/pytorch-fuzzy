@@ -18,19 +18,21 @@ class FuzzyLayer(torch.nn.Module):
         sizes = np.shape(initial_centers)
         self.size_out, self.size_in, *_ = sizes
 
-        diags = []
-        for s in initial_scales:
-            diags.append(np.diag(s))
-        a = torch.FloatTensor(np.array(diags))
-
         const_row = np.zeros(self.size_in+1)
         const_row[self.size_in] = 1
         const_row = np.array([const_row]*self.size_out)
         const_row = np.reshape(const_row, (self.size_out, 1, self.size_in+1))
         self.c_r = nn.Parameter(torch.FloatTensor(const_row), requires_grad=False)
         self.c_one = nn.Parameter(torch.FloatTensor([1]), requires_grad=False)
-        self.scales_and_rot = nn.Parameter(a, requires_grad=trainable) 
-        self.centroids = nn.Parameter(initial_centers.reshape((self.size_out, self.size_in, 1)), requires_grad=trainable)
+        
+        self.scales = nn.Parameter(initial_scales, requires_grad=trainable)
+        self.rots = []
+        for i in range(self.size_in - 1):
+            self.rots.append(nn.Parameter(torch.zeros((self.size_out, self.size_in - i - 1), requires_grad=trainable)))
+        self.rots = nn.ParameterList(self.rots)
+        self.centroids = nn.Parameter(initial_centers.reshape((self.size_out, self.size_in, 1)), requires_grad=trainable)    
+        
+
 
     @classmethod
     def from_dimensions(cls, size_in, size_out, trainable=True):
@@ -51,7 +53,11 @@ class FuzzyLayer(torch.nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         batch_size = input.shape[0]
-        A = torch.cat((self.scales_and_rot, self.centroids), 2)
+        A = torch.diag_embed(self.scales, 0)
+        for i in range(self.size_in - 1):
+            A = A + torch.diag_embed(self.rots[i], i+1)
+            A = A +torch.diag_embed(self.rots[i], i+1, -1, -2)
+        A = torch.cat((A, self.centroids), 2)
         ta = torch.cat([A, self.c_r], 1)
         repeated_one = self.c_one.repeat(batch_size, 1)
         ext_x = torch.cat([input, repeated_one], 1)
@@ -61,3 +67,14 @@ class FuzzyLayer(torch.nn.Module):
         exponents = torch.norm(mul[:,:self.size_in], p=2, dim=1)
         memberships = torch.exp(-exponents)
         return memberships.transpose(0,1)
+    
+    def set_requires_grad_rot(self, requires_grad):
+        for i in range(self.size_in - 1):
+            self.rots[i].requires_grad = requires_grad
+
+    def set_requires_grad_scales(self, requires_grad):
+        self.scales.requires_grad = requires_grad
+
+    def set_requires_grad_centroids(self, requires_grad):
+        self.centroids.requires_grad = requires_grad
+
