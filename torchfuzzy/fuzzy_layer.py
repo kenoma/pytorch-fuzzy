@@ -76,7 +76,7 @@ class FuzzyLayer(torch.nn.Module):
         self.centroids.requires_grad = requires_grad
     
     def get_scales_and_rot(self, eps = 1e-5):
-        scales = torch.abs(self.scales) + eps
+        scales = self.scales
         A = torch.diag_embed(scales, 0)
         for i in range(self.size_in - 1):
             r = self.rots[i]
