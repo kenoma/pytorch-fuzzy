@@ -49,6 +49,7 @@ class FuzzyLayer(torch.nn.Module):
     @classmethod
     def from_centers_and_scales(cls, initial_centers, initial_scales, trainable=True):
         initial_centers = torch.FloatTensor(np.multiply(-1, initial_centers))
+        initial_scales = torch.FloatTensor(initial_scales)
         return cls(initial_centers, initial_scales, trainable)
 
     def forward(self, input: Tensor) -> Tensor:
