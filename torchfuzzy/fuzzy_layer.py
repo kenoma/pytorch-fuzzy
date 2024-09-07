@@ -26,6 +26,7 @@ class FuzzyLayer(torch.nn.Module):
         self.c_one = nn.Parameter(torch.FloatTensor([1]), requires_grad=False)
         
         self.scales = nn.Parameter(initial_scales, requires_grad=trainable)
+        
         self.rots = []
         for i in range(self.size_in - 1):
             self.rots.append(nn.Parameter(torch.zeros((self.size_out, self.size_in - i - 1), requires_grad=trainable)))
@@ -76,7 +77,7 @@ class FuzzyLayer(torch.nn.Module):
     def set_requires_grad_centroids(self, requires_grad):
         self.centroids.requires_grad = requires_grad
     
-    def get_scales_and_rot(self, eps = 1e-5):
+    def get_scales_and_rot(self):
         scales = self.scales
         A = torch.diag_embed(scales, 0)
         for i in range(self.size_in - 1):
@@ -84,6 +85,11 @@ class FuzzyLayer(torch.nn.Module):
             A = A + torch.diag_embed(r, i+1)
             A = A + torch.diag_embed(r, i+1, -1, -2)
         return A
+    
+    def get_centroids(self):
+        lh = self.get_scales_and_rot()
+        rh = self.centroids.squeeze(-1)
+        return torch.linalg.solve(lh, -rh)
             
     def get_transformation_matrix_eigenvals(self):
         A = self.get_scales_and_rot()
