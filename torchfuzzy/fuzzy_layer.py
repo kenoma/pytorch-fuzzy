@@ -89,17 +89,17 @@ class FuzzyLayer(torch.nn.Module):
     def get_centroids(self):
         lh = self.get_scales_and_rot()
         rh = self.centroids.squeeze(-1)
-        return torch.linalg.solve(lh, -rh).detach().clone()
+        return torch.linalg.solve(lh, -rh)
             
     def get_transformation_matrix_eigenvals(self):
-        A = self.get_scales_and_rot().detach().clone()
-        return torch.linalg.eigvals(A).detach().clone()
+        A = self.get_scales_and_rot()
+        return torch.linalg.eigvals(A)
     
     def get_transformation_matrix(self):
         A = self.get_scales_and_rot()
         A = torch.cat((A, self.centroids), 2)
         ta = torch.cat([A, self.c_r], 1)
-        return ta.detach().clone()
+        return ta
     
     
 
