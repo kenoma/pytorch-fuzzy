@@ -89,6 +89,9 @@ class FuzzyBellLayer(torch.nn.Module):
 
     def set_requires_grad_centroids(self, requires_grad):
         self.centroids.requires_grad = requires_grad
+        
+    def set_requires_grad_powers(self, requires_grad):
+        self.b.requires_grad = requires_grad
     
     def get_scales_and_rot(self):
         scales = self.scales
