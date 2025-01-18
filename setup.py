@@ -8,7 +8,7 @@ def readme():
 
 setup(
   name='torchfuzzy',
-  version='0.0.1',
+  version='0.0.2',
   author='Gurov Yury, Khilkov Danil',
   description='Experiments with fuzzy layers and neural networks',
   long_description=readme(),
