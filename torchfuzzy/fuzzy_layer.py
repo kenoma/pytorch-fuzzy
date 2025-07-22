@@ -22,6 +22,7 @@ class FuzzyLayer(torch.nn.Module):
         const_row[self.size_in] = 1
         const_row = np.array([const_row]*self.size_out)
         const_row = np.reshape(const_row, (self.size_out, 1, self.size_in+1))
+
         self.c_r = nn.Parameter(torch.FloatTensor(const_row), requires_grad=False)
         self.c_one = nn.Parameter(torch.FloatTensor([1]), requires_grad=False)
         
