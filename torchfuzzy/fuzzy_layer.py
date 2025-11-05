@@ -69,8 +69,8 @@ class FuzzyLayer(torch.nn.Module):
         return memberships.transpose(0,1)
     
     def set_requires_grad_rot(self, requires_grad):
-        for i in range(self.size_in - 1):
-            self.rots[i].requires_grad = requires_grad
+        for r in self.rots:
+            r.requires_grad = requires_grad
 
     def set_requires_grad_scales(self, requires_grad):
         self.scales.requires_grad = requires_grad
