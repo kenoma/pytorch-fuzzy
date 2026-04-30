@@ -2,10 +2,10 @@ from __future__ import annotations
 from typing import Literal, Optional
 import torch
 from torch import nn, Tensor
-from _fuzzy_layer_base import _FuzzyLayerBase
+from torchfuzzy.fuzzy_layer_base import FuzzyLayerBase
 
 BParam = Literal["raw", "softplus", "exp"]
-class FuzzyBellLayer(_FuzzyLayerBase):
+class FuzzyBellLayer(FuzzyLayerBase):
     """
     mu(x) = 1 / (1 + ||A(x-c)||^{2b})
 

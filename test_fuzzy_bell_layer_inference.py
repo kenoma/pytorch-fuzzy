@@ -1,5 +1,5 @@
 import pytest
-from torchfuzzy import FuzzyBellLayer, FuzzyLayer
+from torchfuzzy import FuzzyBellLayer
 import torch
 
 def test_case_1():

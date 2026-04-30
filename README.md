@@ -119,6 +119,51 @@ mamdani_fis = nn.Sequential(
         )
 ```
 
+### Masking and pruning
+
+```python
+layer = FuzzyLayer.from_dimensions(size_in=4, size_out=8)
+x = torch.randn(16, 4)
+
+# Disable terms 1, 3, 5
+layer.set_active([1, 3, 5], active=False)
+print(layer.n_active)               # 5
+out = layer(x)
+assert (out[:, [1, 3, 5]] == 0).all()
+
+# Delete inactive terms
+layer.prune_inactive()
+print(layer.size_out)               # 5
+print(layer.centers.shape)          # torch.Size([5, 4])
+```
+
+This feature is usefull for removing dead terms (during training or on validation stage).
+
+```python
+with torch.no_grad():
+    mean_act = layer(x_val).mean(dim=0)          # (size_out,)
+    dead = (mean_act < 1e-3).nonzero().view(-1).tolist()
+    if dead:
+        layer.set_active(dead, active=False)
+        layer.prune_inactive()
+```
+
+### Input masking
+
+```python
+# Term 0 sees features 0,1; term 1 — features 2,3; ...
+mask = torch.tensor([
+    [1, 1, 0, 0],
+    [0, 0, 1, 1],
+    [1, 0, 1, 0],
+])
+layer = FuzzyLayer.from_centers(
+    torch.randn(3, 4),
+    input_mask=mask,
+)
+```
+
 ## Publications
 
 [Variational Autoencoders with Fuzzy Inference (Russian)](https://habr.com/ru/articles/803789/)
+[Conditional Variational Autoencoders with Fuzzy Inference](https://doi.org/10.1007/978-3-031-77411-9_9)
