@@ -167,3 +167,20 @@ layer = FuzzyLayer.from_centers(
 
 [Variational Autoencoders with Fuzzy Inference (Russian)](https://habr.com/ru/articles/803789/)
 [Conditional Variational Autoencoders with Fuzzy Inference](https://doi.org/10.1007/978-3-031-77411-9_9)
+
+### Citation
+
+```bibtex
+@InProceedings{10.1007/978-3-031-77411-9_9,
+    author="Gurov, Yury and Khilkov, Danil",
+    editor="Kovalev, Sergey and Kotenko, Igor and Sukhanov, Andrey and Li, Yin and Li, Yao",
+    title="Conditional Variational Autoencoders with Fuzzy Inference",
+    booktitle="Proceedings of the Eighth International Scientific Conference ``Intelligent Information Technologies for Industry'' (IITI'24), Volume 2",
+    year="2024",
+    publisher="Springer Nature Switzerland",
+    address="Cham",
+    pages="91--103",
+    abstract="We present an approach to constructing Conditional Variational Autoencoders (C-VAE) models with fuzzy inference during classification. This approach preserves the disentangling capabilities of the Variational Autoencoder (VAE) while simultaneously performing latent space clusterization. The Fuzzy C-VAE model provides useful features for anomaly detection, utilizing partially labeled datasets and controlled generation of new samples.",
+    isbn="978-3-031-77411-9"
+}
+```
