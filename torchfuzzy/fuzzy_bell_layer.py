@@ -1,122 +1,96 @@
+from __future__ import annotations
+from typing import Literal, Optional
 import torch
-import torch.nn as nn
-import numpy as np
-from torch import Tensor
+from torch import nn, Tensor
+from _fuzzy_layer_base import _FuzzyLayerBase
 
+BParam = Literal["raw", "softplus", "exp"]
+class FuzzyBellLayer(_FuzzyLayerBase):
+    """
+    mu(x) = 1 / (1 + ||A(x-c)||^{2b})
 
-class FuzzyBellLayer(torch.nn.Module):
+    Параметризация b управляется аргументом `b_parametrization`:
+      - "raw"      : b = b_raw                     (без ограничений, может быть <= 0)
+      - "softplus" : b = softplus(b_raw) + eps     (гарантия, что b > 0)
+      - "exp"      : b = exp(b_raw)                (мультипликативная)
+    """
 
-    def __init__(self, initial_centers, initial_scales, initial_pow, trainable=True):
-        """
-        mu_j(x,a,c) =1/( 1 + || a.x  ||^(2*b) )
-        """
-        super().__init__()
+    _EPS = 1e-6
 
-        if np.shape(initial_centers) != np.shape(initial_scales):
-            raise Exception("initial_centers shape does not match initial_scales")
+    def __init__(
+        self,
+        initial_centers: Tensor,
+        initial_scales: Tensor,
+        initial_pow: Optional[Tensor] = None,
+        trainable: bool = True,
+        b_parametrization: BParam = "softplus",
+        **kw,
+    ):
+        super().__init__(initial_centers, initial_scales, trainable=trainable, **kw)
 
-        sizes = np.shape(initial_centers)
-        self.size_out, self.size_in, *_ = sizes
+        if b_parametrization not in ("raw", "softplus", "exp"):
+            raise ValueError(f"unknown b_parametrization: {b_parametrization!r}")
+        self.b_parametrization = b_parametrization
 
-        const_row = np.zeros(self.size_in+1)
-        const_row[self.size_in] = 1
-        const_row = np.array([const_row]*self.size_out)
-        const_row = np.reshape(const_row, (self.size_out, 1, self.size_in+1))
-        self.c_r = nn.Parameter(torch.FloatTensor(const_row), requires_grad=False)
-        self.c_one = nn.Parameter(torch.FloatTensor([1]), requires_grad=False)
+        if initial_pow is None:
+            init_b = torch.ones(self.size_out)
+        else:
+            init_b = torch.as_tensor(initial_pow, dtype=torch.float32)
+            if init_b.shape != (self.size_out,):
+                raise ValueError(
+                    f"initial_pow must have shape ({self.size_out},), "
+                    f"got {tuple(init_b.shape)}"
+                )
+            if b_parametrization != "raw" and (init_b <= 0).any():
+                raise ValueError("initial_pow must be positive for softplus/exp")
+
+        # Инвертируем параметризацию, чтобы после forward получилось ровно initial_pow
+        self._b_raw = nn.Parameter(
+            self._inverse_param(init_b), requires_grad=trainable
+        )
+
+    def _inverse_param(self, b: Tensor) -> Tensor:
+        if self.b_parametrization == "raw":
+            return b.clone()
+        if self.b_parametrization == "exp":
+            return torch.log(b)
         
-        self.scales = nn.Parameter(initial_scales, requires_grad=trainable)
-        self.b = nn.Parameter(initial_pow, requires_grad=trainable)
-        self.rots = []
-        for i in range(self.size_in - 1):
-            self.rots.append(nn.Parameter(torch.zeros((self.size_out, self.size_in - i - 1), requires_grad=trainable)))
-        self.rots = nn.ParameterList(self.rots)
-        self.centroids = nn.Parameter(initial_centers.reshape((self.size_out, self.size_in, 1)), requires_grad=trainable)    
-        
+        y = (b - self._EPS).clamp_min(1e-8)
+        return torch.log(torch.expm1(y))
+
+    @property
+    def b(self) -> Tensor:
+        if self.b_parametrization == "raw":
+            return self._b_raw
+        if self.b_parametrization == "exp":
+            return torch.exp(self._b_raw)
+        return nn.functional.softplus(self._b_raw) + self._EPS
+
+    def _membership(self, rx2: Tensor) -> Tensor:
+        return 1.0 / (1.0 + (rx2 + self._EPS).pow(self.b))
+
+    def _prune_extra(self, kept_idx: Tensor) -> None:
+        self._replace_param("_b_raw", self._b_raw.data[kept_idx])
+
+    def freeze(self, centers=False, scales=False, rot=False, powers=False):
+        super().freeze(centers=centers, scales=scales, rot=rot)
+        if powers:
+            self._b_raw.requires_grad_(False)
+        return self
+
+    def set_requires_grad_powers(self, flag: bool):
+        self._b_raw.requires_grad_(flag)
+
     @classmethod
-    def from_dimensions(cls, size_in, size_out, trainable=True):
-        initial_centers = torch.randn((size_out, size_in))
-        initial_scales = torch.ones((size_out, size_in))
-        initial_pow = torch.ones(size_out)
-        return cls(initial_centers, initial_scales, initial_pow, trainable)
-
-    @classmethod
-    def from_centers(cls, initial_centers, trainable=True):
-        initial_centers = torch.FloatTensor(np.multiply(-1, initial_centers))
-        initial_scales = torch.ones_like(initial_centers)
-        initial_pow = torch.ones(initial_centers.shape[0])
-        return cls(initial_centers, initial_scales, initial_pow, trainable)
-    
-    @classmethod
-    def from_centers_and_scales(cls, initial_centers, initial_scales, trainable=True):
-        initial_centers = torch.FloatTensor(np.multiply(-1, initial_centers))
-        initial_scales =  torch.FloatTensor(initial_scales)
-        initial_pow = torch.ones(initial_centers.shape[0])
-        return cls(initial_centers, initial_scales, initial_pow, trainable)
-
-    @classmethod
-    def from_centers_scales_and_pow(cls, initial_centers, initial_scales, initial_pow, trainable=True):
-        initial_centers = torch.FloatTensor(np.multiply(-1, initial_centers))
-        initial_scales =  torch.FloatTensor(initial_scales)
-        initial_pow = torch.FloatTensor(initial_pow)
-        
-        return cls(initial_centers, initial_scales, initial_pow, trainable)
-
-    def forward(self, input: Tensor) -> Tensor:
-        batch_size = input.shape[0]
-        
-        A = self.get_scales_and_rot()
-        A = torch.cat((A, self.centroids), 2)
-        ta = torch.cat([A, self.c_r], 1)
-        repeated_one = self.c_one.repeat(batch_size, 1)
-        ext_x = torch.cat([input, repeated_one], 1)
-        
-        tx = torch.transpose(ext_x, 0, 1)
-        mul = torch.matmul(ta, tx)
-        
-        rx = torch.norm(mul[:,:self.size_in], p=2, dim=1)
-        rx = rx.transpose(0,1).pow(2*self.b)
-        
-        memberships = 1/(1+rx)
-        return memberships
-    
-    def set_requires_grad_rot(self, requires_grad):
-        for i in range(self.size_in - 1):
-            self.rots[i].requires_grad = requires_grad
-
-    def set_requires_grad_scales(self, requires_grad):
-        self.scales.requires_grad = requires_grad
-
-    def set_requires_grad_centroids(self, requires_grad):
-        self.centroids.requires_grad = requires_grad
-        
-    def set_requires_grad_powers(self, requires_grad):
-        self.b.requires_grad = requires_grad
-    
-    def get_scales_and_rot(self):
-        scales = self.scales
-        A = torch.diag_embed(scales, 0)
-        for i in range(self.size_in - 1):
-            r = self.rots[i]
-            A = A + torch.diag_embed(r, i+1)
-            A = A + torch.diag_embed(r, i+1, -1, -2)
-        return A
-    
-    def get_centroids(self):
-        lh = self.get_scales_and_rot()
-        rh = self.centroids.squeeze(-1)
-        return torch.linalg.solve(lh, -rh)
-            
-    def get_transformation_matrix_eigenvals(self):
-        A = self.get_scales_and_rot()
-        return torch.linalg.eigvals(A)
-    
-    def get_transformation_matrix(self):
-        A = self.get_scales_and_rot()
-        A = torch.cat((A, self.centroids), 2)
-        ta = torch.cat([A, self.c_r], 1)
-        return ta
-    
-    
-
-
+    def from_centers_scales_and_pow(
+        cls, centers, scales, powers, trainable: bool = True,
+        b_parametrization: BParam = "softplus", **kw,
+    ):
+        return cls(
+            torch.as_tensor(centers, dtype=torch.float32),
+            torch.as_tensor(scales,  dtype=torch.float32),
+            torch.as_tensor(powers,  dtype=torch.float32),
+            trainable=trainable,
+            b_parametrization=b_parametrization,
+            **kw,
+        )

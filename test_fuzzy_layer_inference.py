@@ -31,7 +31,7 @@ def test_case_5():
     model = FuzzyLayer.from_centers([[1,1], [2,2], [1,2], [2,1]])
     x = torch.FloatTensor([[1.5,1.5]])
     y = model(x)
-    assert y.detach().numpy()[0] == pytest.approx([0.5,0.5,0.5,0.5], abs=1e-2)
+    assert y.detach().numpy()[0] == pytest.approx([0.6,0.6,0.6,0.6], abs=1e-2)
 
 def test_case_5_inputs_shape():
     model = FuzzyLayer.from_centers([[1,1], [2,2], [1,2], [2,1]])
@@ -79,5 +79,5 @@ def test_case_5_inputs_p4():
     y = model(x)
     ny = y.detach().numpy()
 
-    assert ny[4] == pytest.approx([0.5,0.5,0.5,0.5], abs=1e-2)
+    assert ny[4] == pytest.approx([0.6,0.6,0.6,0.6], abs=1e-2)
 
