@@ -8,11 +8,11 @@ def test_from_array_correct_initialization():
         [1,2],
         [1,2],
         [1,2]])
-    assert model.Z.shape == (1, 3, 2)
+    assert model.Z.shape == (3, 2)
 
 def test_from_dimensions_correct_initialization():
     model = DefuzzyLinearLayer.from_dimensions(4, 7)
-    assert model.Z.shape == (1, 7, 4)
+    assert model.Z.shape == (7, 4)
     
 def test_1d_input_1d_output():
     batch_size = 1

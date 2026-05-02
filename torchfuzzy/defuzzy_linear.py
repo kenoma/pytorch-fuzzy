@@ -1,38 +1,84 @@
-import torch
-import torch.nn as nn
+from typing import Union
 import numpy as np
-from torch import Tensor
+import torch
+from torch import nn, Tensor
 
-class DefuzzyLinearLayer(torch.nn.Module):
+class DefuzzyLinearLayer(nn.Module):
+    """
+    Слой дефаззификации (Надарая-Ватсон):
 
-    def __init__(self, initial_consequences, trainable, with_norm):
-        """
-            z = sum(Z_i*firing_i)/sum(firing_i)
-        """
+        z = sum_i (Z_i * firing_i) / sum_i (firing_i)
+
+    где firing_i — степени активации правил (входы слоя),
+    а Z_i — обучаемые "consequences" (заключения).
+    """
+
+    def __init__(
+        self,
+        initial_consequences: Tensor,
+        trainable: bool = True,
+        with_norm: bool = True,
+        eps: float = 1e-12,
+    ) -> None:
         super().__init__()
+
+        if initial_consequences.ndim != 2:
+            raise ValueError(
+                f"initial_consequences must be 2D (size_out, size_in), "
+                f"got shape {tuple(initial_consequences.shape)}"
+            )
+
         self.with_norm = with_norm
-        self.size_out = initial_consequences.shape[0]
-        self.size_in = initial_consequences.shape[1]
-        self.Z = nn.Parameter(initial_consequences.reshape((1, self.size_out, self.size_in)), requires_grad=trainable)
+        self.eps = eps
+        self.size_out, self.size_in = initial_consequences.shape
+
+        # shape: (size_out, size_in) — broadcast по батчу даст matmul
+        self.Z = nn.Parameter(
+            initial_consequences.clone().float(),
+            requires_grad=trainable,
+        )
 
     @classmethod
-    def from_dimensions(cls, size_in, size_out, trainable=True, with_norm=True):
+    def from_dimensions(
+        cls,
+        size_in: int,
+        size_out: int,
+        trainable: bool = True,
+        with_norm: bool = True,
+    ) -> "DefuzzyLinearLayer":
         Z = torch.rand(size_out, size_in)
-        return cls(Z, trainable, with_norm)
-    
+        return cls(Z, trainable=trainable, with_norm=with_norm)
+
     @classmethod
-    def from_array(cls, initial_array, trainable=True, with_norm=True):
-        Z = torch.FloatTensor(np.array(initial_array))
-        return cls(Z, trainable, with_norm)
+    def from_array(
+        cls,
+        initial_array: Union[np.ndarray, Tensor, list],
+        trainable: bool = True,
+        with_norm: bool = True,
+    ) -> "DefuzzyLinearLayer":
+        Z = torch.as_tensor(np.asarray(initial_array), dtype=torch.float32)
+        return cls(Z, trainable=trainable, with_norm=with_norm)
 
-    def forward(self, input: Tensor) -> Tensor:
-        batch_size = input.shape[0]
-        
-        rep_z = self.Z.expand((batch_size, self.size_out, self.size_in))
-        
+    def forward(self, x: Tensor) -> Tensor:
+        """
+        x: (batch_size, size_in) — firings
+        returns: (batch_size, size_out)
+        """
+        if x.ndim != 2 or x.shape[1] != self.size_in:
+            raise ValueError(
+                f"Expected input of shape (batch, {self.size_in}), "
+                f"got {tuple(x.shape)}"
+            )
+
         if self.with_norm:
-            norm_inp = input / input.sum(-1).reshape((batch_size, 1)).expand((batch_size, self.size_in))
-            return torch.squeeze(torch.bmm(rep_z, norm_inp.reshape(batch_size, self.size_in, 1)), 2)
-        else:
-            return torch.squeeze(torch.bmm(rep_z, input.reshape(batch_size, self.size_in, 1)), 2)
+            denom = x.sum(dim=-1, keepdim=True).clamp_min(self.eps)
+            x = x / denom
 
+        # (batch, size_in) @ (size_in, size_out) -> (batch, size_out)
+        return x @ self.Z.t()
+
+    def extra_repr(self) -> str:
+        return (
+            f"size_in={self.size_in}, size_out={self.size_out}, "
+            f"with_norm={self.with_norm}, trainable={self.Z.requires_grad}"
+        )

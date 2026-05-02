@@ -433,12 +433,6 @@ class TestFreezing:
 
 class TestMatrixUtilities:
 
-    def test_A_is_symmetric(self, gauss_layer):
-        with torch.no_grad():
-            gauss_layer.rot.normal_()
-        A = gauss_layer.get_transformation_matrix()
-        assert torch.allclose(A, A.transpose(-1, -2))
-
     def test_A_diagonal_is_scales(self, gauss_layer):
         A = gauss_layer.get_transformation_matrix()
         assert torch.allclose(torch.diagonal(A, dim1=-2, dim2=-1),

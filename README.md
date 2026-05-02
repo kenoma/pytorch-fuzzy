@@ -46,6 +46,12 @@ $x = [x_1, x_2, \cdots, x_m, 1]$.
 
 `FuzzyLayer` stores and tunes set of matricies $A^{n}, n = 1 \dots N$ where $N$ is layer's output dimension.
 
+To ensure that $A$ is positive-definite, Cholesky factor-based techniques are applied:
+
+```math
+rx^2 \;=\; \|A\,(x-c)\|^2 \;=\; (x-c)^\top \underbrace{A^\top A}_{M} (x-c)
+```
+
 ## How it works
 
 Let's demonstrate how `FuzzyLayer` works on simple 2D case generating dataset with four centroids. 
@@ -165,8 +171,8 @@ layer = FuzzyLayer.from_centers(
 
 ## Publications
 
-[Variational Autoencoders with Fuzzy Inference (Russian)](https://habr.com/ru/articles/803789/)
-[Conditional Variational Autoencoders with Fuzzy Inference](https://doi.org/10.1007/978-3-031-77411-9_9)
+ - [Variational Autoencoders with Fuzzy Inference (Russian)](https://habr.com/ru/articles/803789/)
+ - [Conditional Variational Autoencoders with Fuzzy Inference](https://doi.org/10.1007/978-3-031-77411-9_9)
 
 ### Citation
 
