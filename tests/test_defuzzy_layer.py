@@ -3,6 +3,10 @@ from torchfuzzy import DefuzzyNWLayer
 import torch
 import numpy as np
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 def test_from_array_correct_initialization():
     model = DefuzzyNWLayer.from_array([
         [1,2],

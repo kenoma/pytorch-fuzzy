@@ -6,6 +6,9 @@ import torch
 from torch import nn
 
 from torchfuzzy import FuzzyLayer, FuzzyBellLayer, FuzzyCauchyLayer
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 @pytest.fixture(autouse=True)
 def _seed():

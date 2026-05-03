@@ -1,7 +1,10 @@
 import pytest
 from torchfuzzy import FuzzyLayer
 import torch
-    
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 def test_1d_input_1d_output():
     batch_size = 1
     size_in = 1

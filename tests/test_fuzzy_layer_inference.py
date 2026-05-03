@@ -1,6 +1,9 @@
 import pytest
 from torchfuzzy import FuzzyLayer
 import torch
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 def test_case_1():
     model = FuzzyLayer.from_centers([[1,1], [10,10], [1,10], [10,1]])
