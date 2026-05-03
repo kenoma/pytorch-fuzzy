@@ -13,7 +13,6 @@ Differentiable fuzzy-logic layers for PyTorch — building blocks for **ANFIS**,
 - [Components](#components)
 - [Examples](#examples)
 - [Tricks](#tricks)
-- [How it works](#how-it-works)
 - [Publications](#publications)
 - [Citations](#citations)
 - [License](#license)
