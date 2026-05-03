@@ -39,7 +39,7 @@ r_j^2(x) \;=\; \bigl\lVert A_j (x - c_j) \bigr\rVert^2
          \;=\; (x - c_j)^{\!\top} M_j (x - c_j).
 ```
 
-Different subclasses of `FuzzyLayerBase` then turn `r_j^2` into a membership value `μ_j(x)` via different nonlinearities (Gaussian, generalized bell, Cauchy, …).
+Different subclasses of `FuzzyLayerBase` then turn $r_j^2$ into a membership value $μ_j(x)$ via different nonlinearities (Gaussian, generalized bell, Cauchy).
 
 ## Installation
 
@@ -53,7 +53,7 @@ Requirements: `torch>=1.8`, `numpy`.
 
 ### `FuzzyLayerBase` *(abstract)*
 
-Parent class. Holds learnable centers `c_j ∈ ℝⁿ`, diagonal `diag(A_j)` (`scales`) and the strictly-lower triangle of `A_j` (`rot`). Supplies:
+Parent class. Holds learnable centers $c_j ∈ ℝⁿ$, diagonal $diag(A_j)$ (`scales`) and the strictly-lower triangle of $A_j$ (`rot`). Supplies:
 
 - `input_mask` — per-term feature gate,
 - `active_mask` — per-term on/off switch,
@@ -85,7 +85,7 @@ Heavier tails than Gaussian — useful when you want non-vanishing firing far fr
 \mu_j(x) \;=\; \frac{1}{1 + \bigl(r_j^2(x)\bigr)^{b_j}},\qquad b_j > 0.
 ```
 
-The classical ANFIS membership function with an extra learnable shape exponent `b_j`. `b_j` can be parametrised as:
+The classical ANFIS membership function with an extra learnable shape exponent $b_j$, which can be parametrised as:
 
 - `"raw"` — `b = b_raw` (unconstrained, may go non‑positive);
 - `"softplus"` — `b = softplus(b_raw) + ε` (strictly positive, default);
@@ -274,7 +274,7 @@ layer = FuzzyLayer.from_centers(
 )
 ```
 
-This is equivalent to forcing the corresponding rows of each `A_j` to zero, and is useful for interpretable rule bases and for feature-selection fuzzy models.
+This is equivalent to forcing the corresponding rows of each $A_j$ to zero, and is useful for interpretable rule bases and for feature-selection fuzzy models.
 
 ### Freezing / unfreezing parameters
 
