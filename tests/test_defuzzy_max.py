@@ -230,3 +230,19 @@ def test_training_loop_runs_end_to_end():
         losses.append(loss.item())
 
     assert losses[-1] < losses[0]
+    
+def test_trainable_false_no_grad_fn_when_input_detached(simple_Z):
+    layer = DefuzzyMaxLayer(simple_Z, trainable=False)
+    out = layer(torch.rand(2, 3))  # вход без requires_grad
+    assert out.requires_grad is False
+    assert out.grad_fn is None
+    
+def test_trainable_false_freezes_Z_winner(simple_Z):
+    layer = DefuzzyMaxLayer(simple_Z, trainable=False, winner_take_all=True)
+    assert layer.Z.requires_grad is False
+
+    x = torch.rand(2, 3, requires_grad=True)
+    layer(x).sum().backward()
+
+    assert x.grad is not None
+    assert layer.Z.grad is None
