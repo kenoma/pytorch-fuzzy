@@ -451,7 +451,6 @@ class TestMatrixUtilities:
         c += 1.0
         assert not torch.allclose(c, gauss_layer.centers)
 
-
 class TestSerialization:
 
     def test_state_dict_roundtrip_gauss(self, small_dims):
@@ -495,7 +494,8 @@ class TestDeviceDtype:
         layer = gauss_layer.cuda()
         # буферы должны переехать вместе с параметрами
         assert layer.active_mask.is_cuda
-        assert layer._iu_row.is_cuda
+        assert layer._il_row.is_cuda
+        assert layer._il_col.is_cuda
         x = torch.randn(small_dims["batch"], small_dims["size_in"]).cuda()
         out = layer(x)
         assert out.is_cuda

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Literal, Optional
 import torch
 from torch import nn, Tensor
-from torchfuzzy.fuzzy_layer_base import FuzzyLayerBase
+from .fuzzy_layer_base import FuzzyLayerBase
 
 BParam = Literal["raw", "softplus", "exp"]
 class FuzzyBellLayer(FuzzyLayerBase):

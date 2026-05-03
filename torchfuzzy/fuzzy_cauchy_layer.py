@@ -1,5 +1,5 @@
 from torch import Tensor
-from torchfuzzy.fuzzy_layer_base import FuzzyLayerBase
+from .fuzzy_layer_base import FuzzyLayerBase
 
 class FuzzyCauchyLayer(FuzzyLayerBase):
     """mu(x) = 1 / (1 + ||A(x-c)||^2)"""

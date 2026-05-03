@@ -1,6 +1,6 @@
 import torch
 from torch import Tensor
-from torchfuzzy.fuzzy_layer_base import FuzzyLayerBase
+from .fuzzy_layer_base import FuzzyLayerBase
 
 class FuzzyLayer(FuzzyLayerBase):
     """mu(x) = exp(-||A(x-c)||^2)."""

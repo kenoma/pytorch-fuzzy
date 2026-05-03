@@ -1,17 +1,17 @@
 import pytest
-from torchfuzzy import DefuzzyLinearLayer
+from torchfuzzy import DefuzzyNWLayer
 import torch
 import numpy as np
 
 def test_from_array_correct_initialization():
-    model = DefuzzyLinearLayer.from_array([
+    model = DefuzzyNWLayer.from_array([
         [1,2],
         [1,2],
         [1,2]])
     assert model.Z.shape == (3, 2)
 
 def test_from_dimensions_correct_initialization():
-    model = DefuzzyLinearLayer.from_dimensions(4, 7)
+    model = DefuzzyNWLayer.from_dimensions(4, 7)
     assert model.Z.shape == (7, 4)
     
 def test_1d_input_1d_output():
@@ -20,7 +20,7 @@ def test_1d_input_1d_output():
     size_out = 1
     x = torch.randn((batch_size, size_in))
     
-    model = DefuzzyLinearLayer.from_dimensions(size_in, size_out)
+    model = DefuzzyNWLayer.from_dimensions(size_in, size_out)
     y_pred = model(x)
     
     assert y_pred.shape == (batch_size,size_out)
@@ -31,7 +31,7 @@ def test_1d_input_2d_output():
     size_out = 2
     x = torch.randn((batch_size, size_in))
     
-    model = DefuzzyLinearLayer.from_dimensions(size_in, size_out)
+    model = DefuzzyNWLayer.from_dimensions(size_in, size_out)
     y_pred = model(x)
     
     assert y_pred.shape == (batch_size, size_out)
@@ -42,7 +42,7 @@ def test_1d_input_7d_output():
     size_out = 7
     x = torch.randn((batch_size, size_in))
     
-    model = DefuzzyLinearLayer.from_dimensions(size_in, size_out)
+    model = DefuzzyNWLayer.from_dimensions(size_in, size_out)
     y_pred = model(x)
     
     assert y_pred.shape == (batch_size,size_out)
@@ -53,7 +53,7 @@ def test_2d_input_1d_output():
     size_out = 1
     x = torch.randn((batch_size, size_in))
     
-    model = DefuzzyLinearLayer.from_dimensions(size_in, size_out)
+    model = DefuzzyNWLayer.from_dimensions(size_in, size_out)
     y_pred = model(x)
     
     assert y_pred.shape == (batch_size,size_out)
@@ -64,7 +64,7 @@ def test_2d_input_2d_output():
     size_out = 2
     x = torch.randn((batch_size, size_in))
     
-    model = DefuzzyLinearLayer.from_dimensions(size_in, size_out)
+    model = DefuzzyNWLayer.from_dimensions(size_in, size_out)
     y_pred = model(x)
     
     assert y_pred.shape == (batch_size,size_out)
@@ -75,13 +75,13 @@ def test_7d_input_7d_output():
     size_out = 7
     x = torch.randn((batch_size, size_in))
     
-    model = DefuzzyLinearLayer.from_dimensions(size_in, size_out)
+    model = DefuzzyNWLayer.from_dimensions(size_in, size_out)
     y_pred = model(x)
     
     assert y_pred.shape == (batch_size,size_out)
 
 def test_inference_1():
-    model = DefuzzyLinearLayer.from_array([
+    model = DefuzzyNWLayer.from_array([
         [1, 2],
         [1, 2],
         [1, 2]])
@@ -94,7 +94,7 @@ def test_inference_1():
 
 
 def test_inference_2():
-    model = DefuzzyLinearLayer.from_array([
+    model = DefuzzyNWLayer.from_array([
         [1, 2],
         [1, 2],
         [1, 2]])
@@ -107,7 +107,7 @@ def test_inference_2():
 
 
 def test_inference_3():
-    model = DefuzzyLinearLayer.from_array([
+    model = DefuzzyNWLayer.from_array([
         [1, 2],
         [1, 2],
         [1, 2]])
@@ -120,7 +120,7 @@ def test_inference_3():
 
 
 def test_inference_4():
-    model = DefuzzyLinearLayer.from_array([
+    model = DefuzzyNWLayer.from_array([
         [1, 2],
         [1, 2],
         [1, 2]])

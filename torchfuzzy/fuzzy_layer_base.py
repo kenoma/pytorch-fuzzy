@@ -49,8 +49,8 @@ class FuzzyLayerBase(nn.Module):
         )
 
         iu = torch.triu_indices(n, n, offset=1)
-        self.register_buffer("_iu_row", iu[0], persistent=False)
-        self.register_buffer("_iu_col", iu[1], persistent=False)
+        self.register_buffer("_il_row", iu[0], persistent=False)
+        self.register_buffer("_il_col", iu[1], persistent=False)
 
         if active_mask is None:
             am = torch.ones(self.size_out)
@@ -83,13 +83,13 @@ class FuzzyLayerBase(nn.Module):
         Метрика M = Aᵀ A положительно определена при scales > 0, scales -> |scales| + eps.
         """
         A = torch.diag_embed(self.scales.abs() + eps)
+        A = A.clone()
         if self.size_in > 1:
-            A = A.clone()
-            A[:, self._iu_col, self._iu_row] = self.rot
+            A[:, self._il_col, self._il_row] = self.rot
         return A
 
     def _build_metric(self) -> Tensor:
-        """Симметричная SPD-матрица M = Aᵀ A (то, что собственно Холецкий)."""
+        """Симметричная SPD-матрица M = Aᵀ A (Холецкий)."""
         A = self._build_A()
         return A.transpose(-1, -2) @ A
 
