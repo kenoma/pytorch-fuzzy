@@ -17,6 +17,8 @@ class FuzzyLayerBase(nn.Module):
         rx2_j   = ‖ y_j ‖²            = (x-c)ᵀ M (x-c)  — Махаланобис²
         mu_j(x) = _membership(rx2_j)  (определяется в подклассе)
         out_j   = mu_j * active_mask_j
+        
+        Примечание: scales - при построени М берется по модулю |scales| + eps
     """
 
     def __init__(
